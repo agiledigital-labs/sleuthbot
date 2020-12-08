@@ -20,6 +20,8 @@
     "webpack-node-externals": "^2.5.2"
   },
   "scripts": {
+    "build": "sls package --verbose",
+    "test": "echo 'that would be nice one day'",
     "deploy": "sls deploy --verbose"
   }
 }

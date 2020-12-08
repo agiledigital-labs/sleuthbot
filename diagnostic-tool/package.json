@@ -24,7 +24,11 @@
       "name": "Sean Dawson"
     }
   ],
-  "scripts": {},
+  "scripts": {
+    "build": "sls package --verbose",
+    "test": "echo 'that would be nice one day'",
+    "deploy": "sls deploy --verbose"
+  },
   "dependencies": {
     "aws-sdk": "^2.806.0"
   },
