@@ -24,7 +24,11 @@
       "name": "Sean Dawson"
     }
   ],
-  "scripts": {},
+  "scripts": {
+    "build": "sls package --verbose",
+    "test": "echo 'that would be nice one day'",
+    "deploy": "sls deploy --verbose"
+  },
   "dependencies": {
     "aws-sdk": "^2.806.0"
   },
@@ -40,6 +44,7 @@
     "eslint-plugin-prettier": "^3.2.0",
     "eslint-plugin-unused-imports": "^1.0.1",
     "prettier": "^2.2.1",
+    "serverless": "^2.15.0",
     "serverless-prune-plugin": "^1.4.3",
     "serverless-pseudo-parameters": "^2.5.0",
     "serverless-webpack": "^5.3.5",

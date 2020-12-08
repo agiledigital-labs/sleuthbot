@@ -1,0 +1,41 @@
+name: Node.js CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      STAGE: main
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ap-southeast-2
+      AWS_REGION: ap-southeast-2
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+        package: [test-environment, diagnostic-tool]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install dependencies (${{ matrix.package }})
+        run: yarn install
+        working-directory: ${{ matrix.package }}
+      - name: Build package (${{ matrix.package }})
+        run: yarn build
+        working-directory: ${{ matrix.package }}
+      - name: Test package (${{ matrix.package }})
+        run: yarn test
+        working-directory: ${{ matrix.package }}
+      - name: Deploy package (${{ matrix.package }})
+        run: yarn deploy
+        working-directory: ${{ matrix.package }}
