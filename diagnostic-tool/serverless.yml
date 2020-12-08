@@ -1,0 +1,25 @@
+service: diagnostic-tool
+
+provider:
+  name: aws
+  region: ap-southeast-2
+  runtime: nodejs12.x
+  stage: ${opt:stage}
+
+custom:
+  prune:
+    automatic: true
+    number: 5
+
+functions:
+  test1:
+    handler: src/handlers/test1.handler
+  test2:
+    handler: src/handlers/test2.handler
+  test3:
+    handler: src/handlers/test3.handler
+
+plugins:
+  - serverless-pseudo-parameters
+  - serverless-webpack
+  - serverless-prune-plugin
