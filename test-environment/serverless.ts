@@ -1,4 +1,5 @@
 import type { AWS } from "@serverless/typescript";
+import { env } from "process";
 
 const serverlessConfiguration: AWS = {
   service: "test-environment",
@@ -14,6 +15,8 @@ const serverlessConfiguration: AWS = {
   provider: {
     name: "aws",
     runtime: "nodejs12.x",
+    region: "ap-southeast-2",
+    stage: env.STAGE ?? "dev",
     apiGateway: {
       minimumCompressionSize: 1024,
     },

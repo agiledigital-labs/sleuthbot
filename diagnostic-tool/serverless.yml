@@ -4,7 +4,7 @@ provider:
   name: aws
   region: ap-southeast-2
   runtime: nodejs12.x
-  stage: ${opt:stage}
+  stage: ${${opt:stage}, ${env:stage}, dev}
   apiGateway:
     restApiId: !Ref PublicApiGateway
     restApiRootResourceId: !GetAtt PublicApiGateway.RootResourceId
