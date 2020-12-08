@@ -5,6 +5,9 @@ provider:
   region: ap-southeast-2
   runtime: nodejs12.x
   stage: ${opt:stage}
+  apiGateway:
+    restApiId: !Ref PublicApiGateway
+    restApiRootResourceId: !GetAtt PublicApiGateway.RootResourceId
 
 custom:
   prune:
@@ -12,12 +15,41 @@ custom:
     number: 5
 
 functions:
-  test1:
-    handler: src/handlers/test1.handler
-  test2:
-    handler: src/handlers/test2.handler
-  test3:
-    handler: src/handlers/test3.handler
+  getHealthCheck:
+    handler: src/handlers/getHealthCheck.handler
+    events:
+      - http:
+          path: hc
+          method: get
+
+resources:
+  Resources:
+    PublicApiGateway:
+      Type: AWS::ApiGateway::RestApi
+      Properties:
+        Name: diagnostic-tool-publicApiGateway
+        MinimumCompressionSize: 1024
+        EndpointConfiguration:
+          Types:
+            - EDGE
+    PublicApiGatewayDeployment:
+      Type: AWS::ApiGateway::Deployment
+      DependsOn:
+        - ApiGatewayMethodHcGet
+      Properties:
+        RestApiId: !Ref PublicApiGateway
+
+  Outputs:
+    PublicApiGateway:
+      Description: The ID of the REST API.
+      Value: !Ref PublicApiGateway
+      Export:
+        Name: PublicApiGateway
+    PublicApiGatewayRootResource:
+      Description: The ID of the root resource of the REST API.
+      Value: !GetAtt PublicApiGateway.RootResourceId
+      Export:
+        Name: PublicApiGatewayRootResource
 
 plugins:
   - serverless-pseudo-parameters
