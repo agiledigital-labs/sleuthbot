@@ -4,7 +4,7 @@ provider:
   name: aws
   region: ap-southeast-2
   runtime: nodejs12.x
-  stage: ${opt:stage, env:STAGE, dev}
+  stage: ${opt:stage, env:stage, "dev"}
   apiGateway:
     restApiId: !Ref PublicApiGateway
     restApiRootResourceId: !GetAtt PublicApiGateway.RootResourceId
@@ -21,6 +21,18 @@ functions:
       - http:
           path: hc
           method: get
+  slack-app:
+    handler: src/handlers/slackApp.handler
+    env:
+      SLACK_BOT_TOKEN: ${env:SLACK_SIGNING_SECRET}
+      SLACK_SIGNING_SECRET: ${env:SLACK_SIGNING_SECRET}
+    events:
+      - http:
+          path: slack/events
+          method: get
+      - http:
+          path: slack/events
+          method: post
 
 resources:
   Resources:
@@ -55,3 +67,4 @@ plugins:
   - serverless-pseudo-parameters
   - serverless-webpack
   - serverless-prune-plugin
+  - serverless-offline
