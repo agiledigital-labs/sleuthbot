@@ -1,8 +1,9 @@
-// Require the Bolt package (github.com/slackapi/bolt)
-const { App,ExpressReceiver } = require("@slack/bolt");
+import { App,ExpressReceiver } from "@slack/bolt";
+import awsServerlessExpress from "aws-serverless-express";
+import { APIGatewayEvent, Context} from "aws-lambda";
 
 const expressReceiver = new ExpressReceiver({
-  signingSecret: process.env.SLACK_SIGNING_SECRET,
+  signingSecret: process.env.SLACK_SIGNING_SECRET || "",
   processBeforeResponse: true,
 });
 
@@ -13,7 +14,6 @@ const app = new App({
   processBeforeResponse: true,
 });
 
-app.event(() => console.log("this is a test`"))
 // Listen for a slash command invocation
 app.command('/start-incident', async ({ ack, payload, context }:any) => {
   // Acknowledge the command request
@@ -84,8 +84,8 @@ app.action('button_abc', async ({ ack, body, context }:any) => {
   }
 });
 
-const awsServerlessExpress = require('aws-serverless-express');
 const server = awsServerlessExpress.createServer(expressReceiver.app);
-module.exports.app = (event, context) => {
+
+export const handler = (event: APIGatewayEvent, context: Context) => {
   awsServerlessExpress.proxy(server, event, context);
 }

@@ -27,13 +27,17 @@
   "scripts": {
     "build": "sls package --verbose",
     "test": "echo 'that would be nice one day'",
-    "deploy": "sls deploy --verbose"
+    "deploy": "sls deploy --verbose",
+    "dev": "sls offline"
   },
   "dependencies": {
-    "aws-sdk": "^2.806.0"
+    "@slack/bolt": "^2.5.0",
+    "aws-sdk": "^2.806.0",
+    "aws-serverless-express": "^3.4.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.64",
+    "@types/aws-serverless-express": "^3.3.3",
     "@types/node": "^14.14.11",
     "@typescript-eslint/eslint-plugin": "^4.9.1",
     "@typescript-eslint/parser": "^4.9.1",
@@ -45,6 +49,7 @@
     "eslint-plugin-unused-imports": "^1.0.1",
     "prettier": "^2.2.1",
     "serverless": "^2.15.0",
+    "serverless-offline": "^6.8.0",
     "serverless-prune-plugin": "^1.4.3",
     "serverless-pseudo-parameters": "^2.5.0",
     "serverless-webpack": "^5.3.5",
