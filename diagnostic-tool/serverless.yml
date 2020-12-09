@@ -27,7 +27,7 @@ resources:
     PublicApiGateway:
       Type: AWS::ApiGateway::RestApi
       Properties:
-        Name: diagnostic-tool-publicApiGateway
+        Name: diagnostic-tool-publicApiGateway-${self:provider.stage}
         MinimumCompressionSize: 1024
         EndpointConfiguration:
           Types:
