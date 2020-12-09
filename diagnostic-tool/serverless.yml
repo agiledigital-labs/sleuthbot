@@ -50,6 +50,9 @@ functions:
           topicArn: !Ref IncomingSlackMessageTopic # Required - SNS topic to subscribe to
   handleOutgoingSlackMessage:
     handler: src/handlers/handleOutgoingSlackMessage.handler
+    environment:
+      SLACK_BOT_TOKEN: ${env:SLACK_BOT_TOKEN}
+      SLACK_SIGNING_SECRET: ${env:SLACK_SIGNING_SECRET}
     events:
       - snsSqs:
           name: Outgoing # Required - choose a name prefix for the event queue

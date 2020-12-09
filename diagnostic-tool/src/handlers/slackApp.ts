@@ -4,6 +4,7 @@ import {APIGatewayEvent, Context} from 'aws-lambda';
 import {v4} from 'uuid';
 import {SNS} from 'aws-sdk';
 import {str, cleanEnv} from "envalid";
+import {SlackCommandSnsEvent} from "../types";
 
 const env = cleanEnv(process.env, {
   SLACK_SIGNING_SECRET: str(),
@@ -27,19 +28,14 @@ const sns = new SNS();
 
 
 app.command('/start-incident', async ({ack, payload, context}) => {
-  // Acknowledge the command request
   console.log('Starting');
 
+  // Acknowledge the command request
   await ack();
 
   const incidentId = v4();
 
 
-  // eslint-disable-next-line no-console
-  console.log('Sending SNS message');
-
-  // eslint-disable-next-line no-console
-  console.log('Sending Slack message');
   try {
     const result = await app.client.chat.postMessage({
       token: context.botToken,
@@ -58,10 +54,9 @@ app.command('/start-incident', async ({ack, payload, context}) => {
       // Text in the notification
       text: 'Incident started!',
     });
-    // eslint-disable-next-line no-console
 
 
-    const outgoingPayload = {
+    const outgoingPayload: SlackCommandSnsEvent = {
       token: context.botToken,
       channel: payload.channel_id,
       text: payload.text,
@@ -72,7 +67,7 @@ app.command('/start-incident', async ({ack, payload, context}) => {
         rawPayload: payload,
         rawResponse: result
       }
-    };
+    } as SlackCommandSnsEvent;
 
 
     await sns
