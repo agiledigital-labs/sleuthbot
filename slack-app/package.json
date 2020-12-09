@@ -1,0 +1,27 @@
+{
+  "name": "sluthBot",
+  "version": "0.0.1",
+  "description": "A bot to do chat ops for aws",
+  "main": "app.ts",
+  "scripts": {
+    "dev": "ts-node src/app.ts",
+    "build": "tsc",
+    "start": "node .dist/app.js"
+  },
+  "dependencies": {
+    "@slack/bolt": "^2.5.0"
+  },
+  "engines": {
+    "node": "12.x"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "aws-lambda": "^1.0.6",
+    "ngrok": "^3.3.0",
+    "serverless": "^2.15.0",
+    "serverless-offline": "^6.8.0",
+    "serverless-plugin-typescript": "^1.1.9",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.1.2"
+  }
+}
