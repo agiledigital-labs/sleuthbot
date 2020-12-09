@@ -41,8 +41,10 @@ const cloudWatchLogs = new AWS.CloudWatchLogs();
 const sns = new AWS.SNS();
 
 const getLogs = async (record: SQSRecord): Promise<string[]> => {
-  const payload = JSON.parse(record.body);
-  const stackName = payload.text;
+  const originalMessage = JSON.parse(
+    JSON.parse(record.body).Message
+  ) as SlackCommandSnsEvent;
+  const stackName = originalMessage.text;
   if (typeof stackName !== 'string') {
     console.error('Missing stack name!');
     return [];
