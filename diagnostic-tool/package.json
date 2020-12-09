@@ -33,7 +33,8 @@
   "dependencies": {
     "@slack/bolt": "^2.5.0",
     "aws-sdk": "^2.806.0",
-    "aws-serverless-express": "^3.4.0"
+    "aws-serverless-express": "^3.4.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@agiledigital/serverless-sns-sqs-lambda": "^0.2.0",

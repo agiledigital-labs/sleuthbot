@@ -1,6 +1,8 @@
 import { App, ExpressReceiver } from '@slack/bolt';
 import awsServerlessExpress from 'aws-serverless-express';
 import { APIGatewayEvent, Context } from 'aws-lambda';
+import { v4 } from 'uuid';
+import AWS from 'aws-sdk';
 
 const expressReceiver = new ExpressReceiver({
   signingSecret: process.env.SLACK_SIGNING_SECRET || '',
@@ -19,6 +21,27 @@ app.command('/start-incident', async ({ ack, payload, context }: any) => {
   // Acknowledge the command request
   ack();
 
+  const incidentId = v4();
+
+  const outgoingPayload = {
+    token: context.botToken,
+    channel: payload.channel_id,
+    message: 'incident started',
+    incidentId,
+  };
+
+  // eslint-disable-next-line no-console
+  console.log('Sending SNS message');
+  const sns = new AWS.SNS();
+  await sns
+    .publish({
+      TopicArn: env.INCOMING_SNS_TOPIC_ARN,
+      Message: JSON.stringify(outgoingPayload),
+    })
+    .promise();
+
+  // eslint-disable-next-line no-console
+  console.log('Sending Slack message');
   try {
     const result = await app.client.chat.postMessage({
       token: context.botToken,
@@ -30,20 +53,12 @@ app.command('/start-incident', async ({ ack, payload, context }: any) => {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: 'Go ahead. Click it.',
-          },
-          accessory: {
-            type: 'button',
-            text: {
-              type: 'plain_text',
-              text: 'Click me!',
-            },
-            action_id: 'button_abc',
+            text: `ID: ${incidentId}`,
           },
         },
       ],
       // Text in the notification
-      text: 'Message from Test App',
+      text: 'Incident started!',
     });
     // eslint-disable-next-line no-console
     console.log(result);

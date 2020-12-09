@@ -26,7 +26,7 @@ functions:
     env:
       SLACK_BOT_TOKEN: ${env:SLACK_BOT_TOKEN}
       SLACK_SIGNING_SECRET: ${env:SLACK_SIGNING_SECRET}
-      INCOMING_SNS_TOPIC_NAME: !GetAtt IncomingSlackMessageTopic.TopicName
+      INCOMING_SNS_TOPIC_ARN: !Ref IncomingSlackMessageTopic
     events:
       - http:
           path: slack/events
