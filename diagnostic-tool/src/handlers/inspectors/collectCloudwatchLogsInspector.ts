@@ -2,8 +2,8 @@
 import { SectionBlock } from '@slack/bolt';
 import { SQSEvent } from 'aws-lambda';
 import AWS from 'aws-sdk';
-import { SlackCommandSnsEvent } from 'types';
-import { extractSlackCommand, sendOutgoingMessage } from './common';
+import { SleuthBotIncomingRequest } from '../../types';
+import { extractSlackCommand, sendOutgoingMessage } from '../common';
 
 function notUndefined<T>(x: T | undefined): x is T {
   return x !== undefined;
@@ -14,7 +14,7 @@ const cloudWatchLogs = new AWS.CloudWatchLogs();
 const sns = new AWS.SNS();
 
 const getLogs = async (
-  originalMessage: SlackCommandSnsEvent
+  originalMessage: SleuthBotIncomingRequest
 ): Promise<string[]> => {
   const stackName = originalMessage.text;
   if (typeof stackName !== 'string') {
@@ -124,9 +124,9 @@ const repeatWhileUndefined = async <T>(
 
 const sendMessage = async (
   lines: string[],
-  originalMessage: SlackCommandSnsEvent
+  originalMessage: SleuthBotIncomingRequest
 ): Promise<void> => {
-  const slackPayload: SectionBlock[] = lines.map((line) => ({
+  const logLines: SectionBlock[] = lines.map((line) => ({
     type: 'section',
     text: {
       type: 'mrkdwn',
@@ -137,7 +137,17 @@ const sendMessage = async (
   await sendOutgoingMessage(
     {
       originalMessage,
-      message: slackPayload,
+      message: [
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text:
+              "📃 Log Inspector here! I've fetched you some CloudWatch logs that might be relevant. Hope it helps!",
+          },
+        },
+        ...logLines,
+      ],
     },
     sns
   );

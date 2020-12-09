@@ -1,7 +1,7 @@
 import { SQSRecord } from 'aws-lambda';
 import { SNS } from 'aws-sdk';
 import { cleanEnv, str } from 'envalid';
-import { IncomingSqsMessage, SlackCommandSnsEvent } from 'types';
+import { SleuthBotNotification, SleuthBotIncomingRequest } from 'types';
 
 export const env = cleanEnv(process.env, {
   SLACK_SIGNING_SECRET: str(),
@@ -12,16 +12,16 @@ export const env = cleanEnv(process.env, {
 
 export const extractSlackCommand = ({
   body,
-}: SQSRecord): SlackCommandSnsEvent =>
-  JSON.parse(JSON.parse(body).Message) as SlackCommandSnsEvent;
+}: SQSRecord): SleuthBotIncomingRequest =>
+  JSON.parse(JSON.parse(body).Message) as SleuthBotIncomingRequest;
 
 export const extractOutgoingMessage = ({
   body,
-}: SQSRecord): IncomingSqsMessage =>
-  JSON.parse(JSON.parse(body).Message) as IncomingSqsMessage;
+}: SQSRecord): SleuthBotNotification =>
+  JSON.parse(JSON.parse(body).Message) as SleuthBotNotification;
 
 export const sendOutgoingMessage = async (
-  message: IncomingSqsMessage,
+  message: SleuthBotNotification,
   sns: SNS
 ) => {
   await sns

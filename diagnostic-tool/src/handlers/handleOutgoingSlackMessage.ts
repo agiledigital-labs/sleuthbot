@@ -3,7 +3,7 @@ import { SQSEvent } from 'aws-lambda';
 
 import { App, ExpressReceiver } from '@slack/bolt';
 import { env, extractOutgoingMessage } from './common';
-import { IncomingSqsMessage } from 'types';
+import { SleuthBotNotification } from 'types';
 
 export const handler = async (event: SQSEvent) => {
   // eslint-disable-next-line no-console
@@ -23,7 +23,7 @@ export const handler = async (event: SQSEvent) => {
     processBeforeResponse: true,
   });
 
-  const sendMessage = (incomingMessage: IncomingSqsMessage) => {
+  const sendMessage = (incomingMessage: SleuthBotNotification) => {
     console.log(incomingMessage.message);
 
     return app.client.chat.postMessage({

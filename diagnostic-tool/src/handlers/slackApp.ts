@@ -4,7 +4,7 @@ import awsServerlessExpress from 'aws-serverless-express';
 import { APIGatewayEvent, Context } from 'aws-lambda';
 import { v4 } from 'uuid';
 import { SNS } from 'aws-sdk';
-import { SlackCommandSnsEvent } from '../types';
+import { SleuthBotIncomingRequest } from '../types';
 import { env } from './common';
 
 const expressReceiver = new ExpressReceiver({
@@ -40,15 +40,16 @@ app.command('/start-incident', async ({ ack, payload, context }) => {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `ID: ${incidentId} \n The logs for the incident will be added in a thread`,
+            text:
+              '🕵️‍♂️ SleuthBot is on the case! Updates will be posted this thread. Stand by!',
           },
         },
       ],
       // Text in the notification
-      text: 'Incident started!',
+      text: 'SleuthBot is on the case!',
     });
 
-    const outgoingPayload: SlackCommandSnsEvent = {
+    const outgoingPayload: SleuthBotIncomingRequest = {
       token: context.botToken,
       channel: payload.channel_id,
       text: payload.text,
@@ -59,7 +60,7 @@ app.command('/start-incident', async ({ ack, payload, context }) => {
         rawPayload: payload,
         rawResponse: result,
       },
-    } as SlackCommandSnsEvent;
+    } as SleuthBotIncomingRequest;
 
     await sns
       .publish({

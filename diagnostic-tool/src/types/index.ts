@@ -5,7 +5,7 @@
 import { Block, KnownBlock, SlashCommand } from '@slack/bolt';
 import { WebAPICallResult } from '@slack/web-api/dist/WebClient';
 
-export type SlackCommandSnsEvent = {
+export type SleuthBotIncomingRequest = {
   token: string;
   channel: string;
   text?: string;
@@ -18,7 +18,7 @@ export type SlackCommandSnsEvent = {
   };
 };
 
-export type IncomingSqsMessage = {
-  originalMessage: SlackCommandSnsEvent;
+export type SleuthBotNotification = {
+  originalMessage: SleuthBotIncomingRequest;
   message: (KnownBlock | Block)[];
 };
