@@ -28,7 +28,9 @@ const sns = new SNS();
 
 app.command('/start-incident', async ({ack, payload, context}) => {
   // Acknowledge the command request
-  ack();
+  console.log('Starting');
+
+  await ack();
 
   const incidentId = v4();
 
