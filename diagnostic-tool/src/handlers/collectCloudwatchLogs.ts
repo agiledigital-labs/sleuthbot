@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
+import { SectionBlock } from '@slack/bolt';
 import { SQSEvent, SQSRecord } from 'aws-lambda';
 import AWS from 'aws-sdk';
+import { SlackCommandSnsEvent } from 'types';
 
 function notUndefined<T>(x: T | undefined): x is T {
   return x !== undefined;
@@ -36,13 +38,14 @@ Test payload
 // const sns = new AWS.SNS();
 const resourceGroups = new AWS.ResourceGroups();
 const cloudWatchLogs = new AWS.CloudWatchLogs();
+const sns = new AWS.SNS();
 
-const handleRecord = async (record: SQSRecord) => {
+const getLogs = async (record: SQSRecord): Promise<string[]> => {
   const payload = JSON.parse(record.body);
   const stackName = payload.text;
   if (typeof stackName !== 'string') {
     console.error('Missing stack name!');
-    return;
+    return [];
   }
 
   console.log(`Collecting logs for stack [${stackName}]...`);
@@ -74,7 +77,7 @@ const handleRecord = async (record: SQSRecord) => {
 
   if (names.length === 0) {
     console.warn('No matching resources found!');
-    return;
+    return [];
   }
 
   console.info(`Fetching interesting logs for log groups [${names}]...`);
@@ -120,8 +123,9 @@ const handleRecord = async (record: SQSRecord) => {
   }
 
   const results = queryResultResponse?.results ?? [];
-  const lines = results.map((r) => r[0].value);
-  console.log('lines:', lines);
+  const lines = results.map((r) => r[0].value).filter(notUndefined);
+  console.info(`Retrieved [${lines.length}] lines of logs!`);
+  return lines;
 };
 
 const delayFn = (delay: number): Promise<void> =>
@@ -144,11 +148,42 @@ const repeatWhileUndefined = async <T>(
   }
 };
 
+const sendMessage = async (
+  lines: string[],
+  record: SQSRecord
+): Promise<void> => {
+  const originalMessage = JSON.parse(
+    JSON.parse(record.body).Message
+  ) as SlackCommandSnsEvent;
+
+  const lineString = lines.join('/n');
+
+  const slackPayload: SectionBlock[] = [
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: '```\n' + lineString + '\n```',
+      },
+    },
+  ];
+
+  await sns
+    .publish({
+      TopicArn: process.env.OUTGOING_SNS_TOPIC_ARN,
+      Message: JSON.stringify({ originalMessage, message: slackPayload }),
+    })
+    .promise();
+};
+
 export const handler = async (event: SQSEvent) => {
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(event, undefined, 2));
 
   for await (const record of event.Records) {
-    await handleRecord(record);
+    const lines = await getLogs(record);
+    if (lines.length > 0) {
+      await sendMessage(lines, record);
+    }
   }
 };
