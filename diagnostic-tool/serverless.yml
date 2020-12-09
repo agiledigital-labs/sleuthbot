@@ -193,4 +193,4 @@ plugins:
   - serverless-webpack
   - serverless-prune-plugin
   - serverless-offline
-  - "@agiledigital/serverless-sns-sqs-lambda"
+  - '@agiledigital/serverless-sns-sqs-lambda'
