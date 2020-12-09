@@ -1,7 +1,7 @@
 import { SNSMessage, SQSEvent, SQSRecord } from 'aws-lambda';
 import { CloudTrail } from 'aws-sdk';
 import { EventsList } from 'aws-sdk/clients/cloudtrail';
-import { extractSlackCommand } from './common';
+import { extractSlackCommand } from '../common';
 
 const cloudTrail = new CloudTrail();
 

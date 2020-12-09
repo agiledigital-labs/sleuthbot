@@ -110,17 +110,17 @@ functions:
       - snsSqs:
           name: WM # Required - choose a name prefix for the event queue
           topicArn: !Ref IncomingSlackMessageTopic # Required - SNS topic to subscribe to
-  investigateCloudTrail:
-    handler: src/handlers/investigateCloudTrail.handler
-    events:
-      - snsSqs:
-          name: CCT # Required - choose a name prefix for the event queue
-          topicArn: !Ref IncomingSlackMessageTopic # Required - SNS topic to subscribe to
   collectCloudwatchLogsInspector:
     handler: src/handlers/inspectors/collectCloudwatchLogsInspector.handler
     events:
       - snsSqs:
           name: CCL # Required - choose a name prefix for the event queue
+          topicArn: !Ref IncomingSlackMessageTopic # Required - SNS topic to subscribe to
+  collectCloudTrail:
+    handler: src/handlers/investigateCloudTrail.handler
+    events:
+      - snsSqs:
+          name: CCT # Required - choose a name prefix for the event queue
           topicArn: !Ref IncomingSlackMessageTopic # Required - SNS topic to subscribe to
 
   # Outgoing handlers - Send messages out to Slack
