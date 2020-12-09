@@ -36,6 +36,16 @@ const serverlessConfiguration: AWS = {
         },
       ],
     },
+    scheduled: {
+      handler: "src/handlers/scheduledEvent.scheduled",
+      events: [
+        {
+          schedule: {
+            rate: "rate(1 minute)",
+          },
+        },
+      ],
+    },
   },
 };
 

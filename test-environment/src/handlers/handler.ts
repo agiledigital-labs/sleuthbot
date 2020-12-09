@@ -2,6 +2,9 @@ import type { APIGatewayProxyHandler } from "aws-lambda";
 import "source-map-support/register";
 
 export const hello: APIGatewayProxyHandler = async (event, _context) => {
+  if (event.queryStringParameters?.["break"] === "true") {
+    throw new Error("Something exploded!");
+  }
   return {
     statusCode: 200,
     body: JSON.stringify(
