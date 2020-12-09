@@ -1,16 +1,16 @@
-import {App, ExpressReceiver} from '@slack/bolt';
+import { App, ExpressReceiver } from '@slack/bolt';
 import awsServerlessExpress from 'aws-serverless-express';
-import {APIGatewayEvent, Context} from 'aws-lambda';
-import {v4} from 'uuid';
-import {SNS} from 'aws-sdk';
-import {str, cleanEnv} from "envalid";
-import {SlackCommandSnsEvent} from "../types";
+import { APIGatewayEvent, Context } from 'aws-lambda';
+import { v4 } from 'uuid';
+import { SNS } from 'aws-sdk';
+import { str, cleanEnv } from 'envalid';
+import { SlackCommandSnsEvent } from '../types';
 
 const env = cleanEnv(process.env, {
   SLACK_SIGNING_SECRET: str(),
   SLACK_BOT_TOKEN: str(),
-  INCOMING_SNS_TOPIC_ARN: str()
-})
+  INCOMING_SNS_TOPIC_ARN: str(),
+});
 
 const expressReceiver = new ExpressReceiver({
   signingSecret: env.SLACK_SIGNING_SECRET || '',
@@ -26,15 +26,13 @@ const app = new App({
 
 const sns = new SNS();
 
-
-app.command('/start-incident', async ({ack, payload, context}) => {
+app.command('/start-incident', async ({ ack, payload, context }) => {
   console.log('Starting');
 
   // Acknowledge the command request
   await ack();
 
   const incidentId = v4();
-
 
   try {
     const result = await app.client.chat.postMessage({
@@ -55,7 +53,6 @@ app.command('/start-incident', async ({ack, payload, context}) => {
       text: 'Incident started!',
     });
 
-
     const outgoingPayload: SlackCommandSnsEvent = {
       token: context.botToken,
       channel: payload.channel_id,
@@ -65,10 +62,9 @@ app.command('/start-incident', async ({ack, payload, context}) => {
       messageThreadKey: result.ts,
       meta: {
         rawPayload: payload,
-        rawResponse: result
-      }
+        rawResponse: result,
+      },
     } as SlackCommandSnsEvent;
-
 
     await sns
       .publish({
@@ -77,13 +73,11 @@ app.command('/start-incident', async ({ack, payload, context}) => {
       })
       .promise();
 
-
     console.log(result);
   } catch (error) {
     console.error(error);
   }
 });
-
 
 const server = awsServerlessExpress.createServer(expressReceiver.app);
 

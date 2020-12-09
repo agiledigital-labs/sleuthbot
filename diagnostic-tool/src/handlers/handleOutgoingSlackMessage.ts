@@ -35,14 +35,17 @@ export const handler = async (event: SQSEvent) => {
     processBeforeResponse: true,
   });
 
-  const sendMessage = (incomingMessage: IncomingSqsMessage) =>
-    app.client.chat.postMessage({
+  const sendMessage = (incomingMessage: IncomingSqsMessage) => {
+    console.log(incomingMessage.message);
+
+    return app.client.chat.postMessage({
       thread_ts: incomingMessage.originalMessage.messageThreadKey,
       token: env.SLACK_BOT_TOKEN,
       channel: incomingMessage.originalMessage.channel,
       blocks: incomingMessage.message,
       text: 'More logs for you to look at',
     });
+  };
 
   const messagesOutgoing = bodies.map((message) => sendMessage(message));
 
