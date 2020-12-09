@@ -35,7 +35,8 @@ app.command('/start-incident', async ({ ack, payload, context }: any) => {
   const sns = new AWS.SNS();
   await sns
     .publish({
-      TopicArn: env.INCOMING_SNS_TOPIC_ARN,
+      // TODO: Use envalid for these
+      TopicArn: process.env.INCOMING_SNS_TOPIC_ARN,
       Message: JSON.stringify(outgoingPayload),
     })
     .promise();
