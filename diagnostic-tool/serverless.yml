@@ -21,7 +21,7 @@ functions:
       - http:
           path: hc
           method: get
-  slack-app:
+  slackApp:
     handler: src/handlers/slackApp.handler
     env:
       SLACK_BOT_TOKEN: ${env:SLACK_BOT_TOKEN}
