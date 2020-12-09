@@ -31,7 +31,7 @@ export const handler = async (event: SQSEvent) => {
       token: env.SLACK_BOT_TOKEN,
       channel: incomingMessage.originalMessage.channel,
       blocks: incomingMessage.message,
-      text: 'More logs for you to look at',
+      text: incomingMessage.messageAsText ?? 'SleuthBot Message',
     });
   };
 
