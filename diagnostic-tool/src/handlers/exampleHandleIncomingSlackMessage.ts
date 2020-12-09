@@ -1,7 +1,9 @@
+/* eslint-disable no-console */
 import { SQSEvent } from 'aws-lambda';
 import { SNS } from 'aws-sdk';
 import { cleanEnv, str } from 'envalid';
 import { SlackCommandSnsEvent } from '../types';
+import { extractSlackCommand, sendOutgoingMessage } from './common';
 
 const sns = new SNS();
 
@@ -14,9 +16,7 @@ const env = cleanEnv(process.env, {
 export const handler = async (event: SQSEvent) => {
   console.log(JSON.stringify(event, undefined, 2));
 
-  const bodies = event.Records.map(
-    ({ body }) => JSON.parse(JSON.parse(body).Message) as SlackCommandSnsEvent
-  );
+  const bodies = event.Records.map(extractSlackCommand);
 
   const testPayload = (index: string) => [
     {
@@ -36,12 +36,7 @@ export const handler = async (event: SQSEvent) => {
         message: message,
       };
       console.log(outgoingPayload);
-      await sns
-        .publish({
-          TopicArn: env.OUTGOING_SNS_TOPIC_ARN,
-          Message: JSON.stringify(outgoingPayload),
-        })
-        .promise();
+      await sendOutgoingMessage(outgoingPayload, sns);
     });
     return Promise.all(messages);
   };

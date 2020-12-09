@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { App, ExpressReceiver } from '@slack/bolt';
 import awsServerlessExpress from 'aws-serverless-express';
 import { APIGatewayEvent, Context } from 'aws-lambda';

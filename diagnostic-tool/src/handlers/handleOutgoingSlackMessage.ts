@@ -1,9 +1,10 @@
+/* eslint-disable no-console */
 import { SQSEvent } from 'aws-lambda';
 
 import { App, ExpressReceiver } from '@slack/bolt';
-import { SlackCommandSnsEvent } from '../types';
 import { cleanEnv, str } from 'envalid';
-import { Block, KnownBlock } from '@slack/types';
+import { extractOutgoingMessage } from './common';
+import { IncomingSqsMessage } from 'types';
 
 export const handler = async (event: SQSEvent) => {
   // eslint-disable-next-line no-console
@@ -14,14 +15,7 @@ export const handler = async (event: SQSEvent) => {
     SLACK_BOT_TOKEN: str(),
   });
 
-  interface IncomingSqsMessage {
-    originalMessage: SlackCommandSnsEvent;
-    message: (KnownBlock | Block)[];
-  }
-
-  const bodies = event.Records.map(
-    ({ body }) => JSON.parse(JSON.parse(body).Message) as IncomingSqsMessage
-  );
+  const bodies = event.Records.map(extractOutgoingMessage);
 
   const expressReceiver = new ExpressReceiver({
     signingSecret: env.SLACK_SIGNING_SECRET || '',
