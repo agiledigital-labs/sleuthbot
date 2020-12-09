@@ -18,7 +18,7 @@ export const handler = async (event: SQSEvent) => {
             text: {
               type: 'mrkdwn',
               text:
-                "I'm sending some inspectors out to do some investigation. You should hear from them shortly.",
+                "🕵️‍♂️ I'm sending some inspectors out to do some investigation. You should hear from them shortly.",
             },
           },
         ],

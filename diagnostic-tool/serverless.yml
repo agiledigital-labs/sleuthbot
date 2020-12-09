@@ -108,13 +108,13 @@ functions:
     handler: src/handlers/inspectors/welcomeMessageInspector.handler
     events:
       - snsSqs:
-          name: Incoming # Required - choose a name prefix for the event queue
+          name: WM # Required - choose a name prefix for the event queue
           topicArn: !Ref IncomingSlackMessageTopic # Required - SNS topic to subscribe to
   collectCloudwatchLogsInspector:
     handler: src/handlers/inspectors/collectCloudwatchLogsInspector.handler
     events:
       - snsSqs:
-          name: CollectCloudwatchLogs # Required - choose a name prefix for the event queue
+          name: CCL # Required - choose a name prefix for the event queue
           topicArn: !Ref IncomingSlackMessageTopic # Required - SNS topic to subscribe to
 
   # Outgoing handlers - Send messages out to Slack
@@ -122,7 +122,7 @@ functions:
     handler: src/handlers/handleOutgoingSlackMessage.handler
     events:
       - snsSqs:
-          name: Outgoing # Required - choose a name prefix for the event queue
+          name: HOSM # Required - choose a name prefix for the event queue
           topicArn: !Ref OutgoingSlackMessageTopic # Required - SNS topic to subscribe to
 
 resources:
