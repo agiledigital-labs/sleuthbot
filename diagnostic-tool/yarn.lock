@@ -10,6 +10,11 @@
     d "1"
     es5-ext "^0.10.47"
 
+"@agiledigital/serverless-sns-sqs-lambda@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@agiledigital/serverless-sns-sqs-lambda/-/serverless-sns-sqs-lambda-0.2.0.tgz#78d908740c7cb4883b3b27a27c028d8e1b967875"
+  integrity sha512-pGKJo6fBSI3NlydBlx9wd46/9L2cQEyESBkO9m/+glsZ7UD7lugDxotAd6UQWm+MjEHh0K8V7/+skuSGKjsWfQ==
+
 "@babel/code-frame@^7.0.0":
   version "7.10.4"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.10.4.tgz#168da1a36e90da68ae8d49c0f1b48c7c6249213a"

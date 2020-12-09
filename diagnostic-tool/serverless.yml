@@ -24,8 +24,9 @@ functions:
   slack-app:
     handler: src/handlers/slackApp.handler
     env:
-      SLACK_BOT_TOKEN: ${env:SLACK_SIGNING_SECRET}
+      SLACK_BOT_TOKEN: ${env:SLACK_BOT_TOKEN}
       SLACK_SIGNING_SECRET: ${env:SLACK_SIGNING_SECRET}
+      INCOMING_SNS_TOPIC_NAME: !GetAtt IncomingSlackMessageTopic.TopicName
     events:
       - http:
           path: slack/events
@@ -33,6 +34,12 @@ functions:
       - http:
           path: slack/events
           method: post
+  exampleHandleIncomingSlackMessage:
+    handler: src/handlers/exampleHandleIncomingSlackMessage.handler
+    events:
+      - snsSqs:
+          name: ExampleHandleIncomingSlackMessage # Required - choose a name prefix for the event queue
+          topicArn: !Ref IncomingSlackMessageTopic # Required - SNS topic to subscribe to
 
 resources:
   Resources:
@@ -50,6 +57,8 @@ resources:
         - ApiGatewayMethodHcGet
       Properties:
         RestApiId: !Ref PublicApiGateway
+    IncomingSlackMessageTopic:
+      Type: AWS::SNS::Topic
 
   Outputs:
     PublicApiGateway:
