@@ -39,7 +39,7 @@ resources:
     PublicApiGateway:
       Type: AWS::ApiGateway::RestApi
       Properties:
-        Name: diagnostic-tool-publicApiGateway
+        Name: diagnostic-tool-publicApiGateway-${self:provider.stage}
         MinimumCompressionSize: 1024
         EndpointConfiguration:
           Types:
@@ -56,12 +56,12 @@ resources:
       Description: The ID of the REST API.
       Value: !Ref PublicApiGateway
       Export:
-        Name: PublicApiGateway
+        Name: PublicApiGateway-${self:provider.stage}
     PublicApiGatewayRootResource:
       Description: The ID of the root resource of the REST API.
       Value: !GetAtt PublicApiGateway.RootResourceId
       Export:
-        Name: PublicApiGatewayRootResource
+        Name: PublicApiGatewayRootResource-${self:provider.stage}
 
 plugins:
   - serverless-pseudo-parameters
