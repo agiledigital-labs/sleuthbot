@@ -41,3 +41,4 @@ jobs:
       - name: Deploy package (${{ matrix.package }})
         run: yarn deploy
         working-directory: ${{ matrix.package }}
+        if: github.ref == 'refs/heads/main'
