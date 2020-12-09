@@ -1,15 +1,11 @@
-import {App, ExpressReceiver} from '@slack/bolt';
+/* eslint-disable no-console */
+import { App, ExpressReceiver } from '@slack/bolt';
 import awsServerlessExpress from 'aws-serverless-express';
-import {APIGatewayEvent, Context} from 'aws-lambda';
-import {v4} from 'uuid';
-import {SNS} from 'aws-sdk';
-import {str, cleanEnv} from "envalid";
-
-const env = cleanEnv(process.env, {
-  SLACK_SIGNING_SECRET: str(),
-  SLACK_BOT_TOKEN: str(),
-  INCOMING_SNS_TOPIC_ARN: str()
-})
+import { APIGatewayEvent, Context } from 'aws-lambda';
+import { v4 } from 'uuid';
+import { SNS } from 'aws-sdk';
+import { SleuthBotIncomingRequest } from '../types';
+import { env } from './common';
 
 const expressReceiver = new ExpressReceiver({
   signingSecret: env.SLACK_SIGNING_SECRET || '',
@@ -25,21 +21,14 @@ const app = new App({
 
 const sns = new SNS();
 
-
-app.command('/start-incident', async ({ack, payload, context}) => {
-  // Acknowledge the command request
+app.command('/start-incident', async ({ ack, payload, context }) => {
   console.log('Starting');
 
+  // Acknowledge the command request
   await ack();
 
   const incidentId = v4();
 
-
-  // eslint-disable-next-line no-console
-  console.log('Sending SNS message');
-
-  // eslint-disable-next-line no-console
-  console.log('Sending Slack message');
   try {
     const result = await app.client.chat.postMessage({
       token: context.botToken,
@@ -51,17 +40,16 @@ app.command('/start-incident', async ({ack, payload, context}) => {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `ID: ${incidentId} \n The logs for the incident will be added in a thread`,
+            text:
+              '🕵️‍♂️ SleuthBot is on the case! Updates will be posted this thread. Stand by!',
           },
         },
       ],
       // Text in the notification
-      text: 'Incident started!',
+      text: 'SleuthBot is on the case!',
     });
-    // eslint-disable-next-line no-console
 
-
-    const outgoingPayload = {
+    const outgoingPayload: SleuthBotIncomingRequest = {
       token: context.botToken,
       channel: payload.channel_id,
       text: payload.text,
@@ -70,10 +58,9 @@ app.command('/start-incident', async ({ack, payload, context}) => {
       messageThreadKey: result.ts,
       meta: {
         rawPayload: payload,
-        rawResponse: result
-      }
-    };
-
+        rawResponse: result,
+      },
+    } as SleuthBotIncomingRequest;
 
     await sns
       .publish({
@@ -82,13 +69,11 @@ app.command('/start-incident', async ({ack, payload, context}) => {
       })
       .promise();
 
-
     console.log(result);
   } catch (error) {
     console.error(error);
   }
 });
-
 
 const server = awsServerlessExpress.createServer(expressReceiver.app);
 
