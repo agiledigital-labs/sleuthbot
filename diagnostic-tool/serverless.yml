@@ -44,12 +44,19 @@ functions:
           method: post
   exampleHandleIncomingSlackMessage:
     handler: src/handlers/exampleHandleIncomingSlackMessage.handler
+    environment:
+      SLACK_BOT_TOKEN: ${env:SLACK_BOT_TOKEN}
+      SLACK_SIGNING_SECRET: ${env:SLACK_SIGNING_SECRET}
+      OUTGOING_SNS_TOPIC_ARN: !Ref OutgoingSlackMessageTopic
     events:
       - snsSqs:
           name: Incoming # Required - choose a name prefix for the event queue
           topicArn: !Ref IncomingSlackMessageTopic # Required - SNS topic to subscribe to
   handleOutgoingSlackMessage:
     handler: src/handlers/handleOutgoingSlackMessage.handler
+    environment:
+      SLACK_BOT_TOKEN: ${env:SLACK_BOT_TOKEN}
+      SLACK_SIGNING_SECRET: ${env:SLACK_SIGNING_SECRET}
     events:
       - snsSqs:
           name: Outgoing # Required - choose a name prefix for the event queue
