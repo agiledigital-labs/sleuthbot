@@ -20,6 +20,7 @@ custom:
   prune:
     automatic: true
     number: 5
+  domain: sluthbot.sammurphy.dev
 
 functions:
   getHealthCheck:
@@ -74,7 +75,35 @@ resources:
       Type: AWS::SNS::Topic
     OutgoingSlackMessageTopic:
       Type: AWS::SNS::Topic
-
+    PublicApiGatewayBasePathMapping:
+      Type: AWS::ApiGateway::BasePathMapping
+      DependsOn:
+        - PublicApiGatewayDeployment
+      Properties:
+        DomainName: !Ref PublicApiGatewayDomainName
+        Stage: ${self:provider.stage}
+        RestApiId: !Ref PublicApiGateway
+    PublicApiGatewayDomainName:
+      Type: AWS::ApiGateway::DomainName
+      Properties:
+        CertificateArn: arn:aws:acm:us-east-1:#{AWS::AccountId}:certificate/becfa201-6302-4676-be72-5e8b49d1ee56
+        DomainName: ${self:provider.stage}.${self:custom.domain}
+        EndpointConfiguration:
+          Types:
+            - EDGE
+        SecurityPolicy: TLS_1_2
+    PublicAliasRecord:
+      Type: AWS::Route53::RecordSet
+      DependsOn:
+        - PublicApiGatewayDomainName
+      Properties:
+        AliasTarget:
+          DNSName: !GetAtt PublicApiGatewayDomainName.DistributionDomainName
+          EvaluateTargetHealth: false
+          HostedZoneId: !GetAtt PublicApiGatewayDomainName.DistributionHostedZoneId
+        Type: A
+        Name: ${self:provider.stage}.${self:custom.domain}
+        HostedZoneName: ${self:custom.domain}.
   Outputs:
     PublicApiGateway:
       Description: The ID of the REST API.
