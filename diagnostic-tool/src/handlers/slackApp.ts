@@ -34,26 +34,9 @@ app.command('/start-incident', async ({ack, payload, context}) => {
 
   const incidentId = v4();
 
-  const outgoingPayload = {
-    token: context.botToken,
-    channel: payload.channel_id,
-    text: payload.text,
-    message: 'incident started',
-    incidentId,
-    meta: {
-      raw: payload
-    }
-  };
 
   // eslint-disable-next-line no-console
   console.log('Sending SNS message');
-  await sns
-    .publish({
-      // TODO: Use envalid for these
-      TopicArn: env.INCOMING_SNS_TOPIC_ARN,
-      Message: JSON.stringify(outgoingPayload),
-    })
-    .promise();
 
   // eslint-disable-next-line no-console
   console.log('Sending Slack message');
@@ -68,7 +51,7 @@ app.command('/start-incident', async ({ack, payload, context}) => {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `ID: ${incidentId}`,
+            text: `ID: ${incidentId} \n The logs for the incident will be added in a thread`,
           },
         },
       ],
@@ -76,43 +59,36 @@ app.command('/start-incident', async ({ack, payload, context}) => {
       text: 'Incident started!',
     });
     // eslint-disable-next-line no-console
-    console.log(result);
-  } catch (error) {
-    console.error(error);
-  }
-});
 
-// Listen for a button invocation with action_id `button_abc`
-// You must set up a Request URL under Interactive Components on your app configuration page
-app.action('button_abc', async ({ack, body, context}: any) => {
-  // Acknowledge the button request
-  ack();
 
-  try {
-    // Update the message
-    const result = await app.client.chat.update({
+    const outgoingPayload = {
       token: context.botToken,
-      // ts of message to update
-      ts: body.message.ts,
-      // Channel of message
-      channel: body.channel.id,
-      blocks: [
-        {
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text: '*The button was clicked!*',
-          },
-        },
-      ],
-      text: 'Message from Test App',
-    });
-    // eslint-disable-next-line no-console
+      channel: payload.channel_id,
+      text: payload.text,
+      message: 'incident started',
+      incidentId,
+      messageThreadKey: result.ts,
+      meta: {
+        rawPayload: payload,
+        rawResponse: result
+      }
+    };
+
+
+    await sns
+      .publish({
+        TopicArn: env.INCOMING_SNS_TOPIC_ARN,
+        Message: JSON.stringify(outgoingPayload),
+      })
+      .promise();
+
+
     console.log(result);
   } catch (error) {
     console.error(error);
   }
 });
+
 
 const server = awsServerlessExpress.createServer(expressReceiver.app);
 

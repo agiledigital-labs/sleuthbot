@@ -46,13 +46,13 @@ functions:
     handler: src/handlers/exampleHandleIncomingSlackMessage.handler
     events:
       - snsSqs:
-          name: ExampleHandleIncomingSlackMessage # Required - choose a name prefix for the event queue
+          name: Incoming # Required - choose a name prefix for the event queue
           topicArn: !Ref IncomingSlackMessageTopic # Required - SNS topic to subscribe to
   handleOutgoingSlackMessage:
     handler: src/handlers/handleOutgoingSlackMessage.handler
     events:
       - snsSqs:
-          name: HandleOutgoingSlackMessage # Required - choose a name prefix for the event queue
+          name: Outgoing # Required - choose a name prefix for the event queue
           topicArn: !Ref OutgoingSlackMessageTopic # Required - SNS topic to subscribe to
 
 resources:
@@ -121,3 +121,4 @@ plugins:
   - serverless-webpack
   - serverless-prune-plugin
   - serverless-offline
+  - "@agiledigital/serverless-sns-sqs-lambda"
