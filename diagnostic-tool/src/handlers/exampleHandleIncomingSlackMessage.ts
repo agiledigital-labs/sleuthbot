@@ -1,17 +1,10 @@
 /* eslint-disable no-console */
 import { SQSEvent } from 'aws-lambda';
 import { SNS } from 'aws-sdk';
-import { cleanEnv, str } from 'envalid';
 import { SlackCommandSnsEvent } from '../types';
 import { extractSlackCommand, sendOutgoingMessage } from './common';
 
 const sns = new SNS();
-
-const env = cleanEnv(process.env, {
-  SLACK_SIGNING_SECRET: str(),
-  SLACK_BOT_TOKEN: str(),
-  OUTGOING_SNS_TOPIC_ARN: str(),
-});
 
 export const handler = async (event: SQSEvent) => {
   console.log(JSON.stringify(event, undefined, 2));

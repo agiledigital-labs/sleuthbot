@@ -1,6 +1,11 @@
 import { SQSRecord } from 'aws-lambda';
 import { SNS } from 'aws-sdk';
+import { cleanEnv, str } from 'envalid';
 import { IncomingSqsMessage, SlackCommandSnsEvent } from 'types';
+
+const env = cleanEnv(process.env, {
+  OUTGOING_SNS_TOPIC_ARN: str(),
+});
 
 export const extractSlackCommand = ({
   body,
@@ -18,7 +23,7 @@ export const sendOutgoingMessage = async (
 ) => {
   await sns
     .publish({
-      TopicArn: process.env.OUTGOING_SNS_TOPIC_ARN,
+      TopicArn: env.OUTGOING_SNS_TOPIC_ARN,
       Message: JSON.stringify(message),
     })
     .promise();
