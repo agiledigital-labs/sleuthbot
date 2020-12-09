@@ -4,14 +4,8 @@ import awsServerlessExpress from 'aws-serverless-express';
 import { APIGatewayEvent, Context } from 'aws-lambda';
 import { v4 } from 'uuid';
 import { SNS } from 'aws-sdk';
-import { str, cleanEnv } from 'envalid';
 import { SlackCommandSnsEvent } from '../types';
-
-const env = cleanEnv(process.env, {
-  SLACK_SIGNING_SECRET: str(),
-  SLACK_BOT_TOKEN: str(),
-  INCOMING_SNS_TOPIC_ARN: str(),
-});
+import { env } from './common';
 
 const expressReceiver = new ExpressReceiver({
   signingSecret: env.SLACK_SIGNING_SECRET || '',

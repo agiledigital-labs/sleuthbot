@@ -2,18 +2,12 @@
 import { SQSEvent } from 'aws-lambda';
 
 import { App, ExpressReceiver } from '@slack/bolt';
-import { cleanEnv, str } from 'envalid';
-import { extractOutgoingMessage } from './common';
+import { env, extractOutgoingMessage } from './common';
 import { IncomingSqsMessage } from 'types';
 
 export const handler = async (event: SQSEvent) => {
   // eslint-disable-next-line no-console
   console.log(JSON.stringify(event, undefined, 2));
-
-  const env = cleanEnv(process.env, {
-    SLACK_SIGNING_SECRET: str(),
-    SLACK_BOT_TOKEN: str(),
-  });
 
   const bodies = event.Records.map(extractOutgoingMessage);
 

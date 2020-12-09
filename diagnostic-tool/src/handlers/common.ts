@@ -3,7 +3,10 @@ import { SNS } from 'aws-sdk';
 import { cleanEnv, str } from 'envalid';
 import { IncomingSqsMessage, SlackCommandSnsEvent } from 'types';
 
-const env = cleanEnv(process.env, {
+export const env = cleanEnv(process.env, {
+  SLACK_SIGNING_SECRET: str(),
+  SLACK_BOT_TOKEN: str(),
+  INCOMING_SNS_TOPIC_ARN: str(),
   OUTGOING_SNS_TOPIC_ARN: str(),
 });
 
