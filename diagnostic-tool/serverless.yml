@@ -40,6 +40,12 @@ functions:
       - snsSqs:
           name: ExampleHandleIncomingSlackMessage # Required - choose a name prefix for the event queue
           topicArn: !Ref IncomingSlackMessageTopic # Required - SNS topic to subscribe to
+  handleOutgoingSlackMessage:
+    handler: src/handlers/handleOutgoingSlackMessage.handler
+    events:
+      - snsSqs:
+          name: HandleOutgoingSlackMessage # Required - choose a name prefix for the event queue
+          topicArn: !Ref OutgoingSlackMessageTopic # Required - SNS topic to subscribe to
 
 resources:
   Resources:
@@ -58,6 +64,8 @@ resources:
       Properties:
         RestApiId: !Ref PublicApiGateway
     IncomingSlackMessageTopic:
+      Type: AWS::SNS::Topic
+    OutgoingSlackMessageTopic:
       Type: AWS::SNS::Topic
 
   Outputs:
