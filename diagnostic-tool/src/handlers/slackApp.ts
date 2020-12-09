@@ -37,8 +37,12 @@ app.command('/start-incident', async ({ack, payload, context}) => {
   const outgoingPayload = {
     token: context.botToken,
     channel: payload.channel_id,
+    text: payload.text,
     message: 'incident started',
     incidentId,
+    meta: {
+      raw: payload
+    }
   };
 
   // eslint-disable-next-line no-console
