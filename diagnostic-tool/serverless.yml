@@ -8,6 +8,9 @@ provider:
   apiGateway:
     restApiId: !Ref PublicApiGateway
     restApiRootResourceId: !GetAtt PublicApiGateway.RootResourceId
+  environment:
+    STAGE: ${self:provider.stage}
+    NODE_OPTIONS: --enable-source-maps
   iamRoleStatements:
     - Effect: 'Allow'
       Action:
@@ -15,6 +18,60 @@ provider:
       Resource:
         - !Ref IncomingSlackMessageTopic
         - !Ref OutgoingSlackMessageTopic
+    # For searching for resources
+    - Effect: 'Allow'
+      Action:
+        [
+          'resource-groups:Get*',
+          'resource-groups:List*',
+          'resource-groups:Search*',
+          'tag:Get*',
+          'cloudformation:DescribeStacks',
+          'cloudformation:ListStackResources',
+          'ec2:DescribeInstances',
+          'ec2:DescribeSecurityGroups',
+          'ec2:DescribeSnapshots',
+          'ec2:DescribeVolumes',
+          'ec2:DescribeVpcs',
+          'elasticache:DescribeCacheClusters',
+          'elasticache:DescribeSnapshots',
+          'elasticache:ListTagsForResource',
+          'elasticbeanstalk:DescribeEnvironments',
+          'elasticmapreduce:DescribeCluster',
+          'elasticmapreduce:ListClusters',
+          'glacier:ListVaults',
+          'glacier:DescribeVault',
+          'glacier:ListTagsForVault',
+          'kinesis:ListStreams',
+          'kinesis:DescribeStream',
+          'kinesis:ListTagsForStream',
+          'opsworks:DescribeStacks',
+          'opsworks:ListTags',
+          'rds:DescribeDBInstances',
+          'rds:DescribeDBSnapshots',
+          'rds:ListTagsForResource',
+          'redshift:DescribeClusters',
+          'redshift:DescribeTags',
+          'route53domains:ListDomains',
+          'route53:ListHealthChecks',
+          'route53:GetHealthCheck',
+          'route53:ListHostedZones',
+          'route53:GetHostedZone',
+          'route53:ListTagsForResource',
+          'storagegateway:ListGateways',
+          'storagegateway:DescribeGatewayInformation',
+          'storagegateway:ListTagsForResource',
+          's3:ListAllMyBuckets',
+          's3:GetBucketTagging',
+          'elasticloadbalancing:DescribeLoadBalancers',
+          'elasticloadbalancing:DescribeTags',
+          'ssm:ListDocuments',
+        ]
+      Resource: '*'
+      # TODO: Restrict to only logs in this stack/stage
+    - Effect: 'Allow'
+      Action: ['logs:GetQueryResults', 'logs:StartQuery', 'logs:StopQuery']
+      Resource: '*'
 
 custom:
   prune:
@@ -51,6 +108,14 @@ functions:
     events:
       - snsSqs:
           name: Incoming # Required - choose a name prefix for the event queue
+          topicArn: !Ref IncomingSlackMessageTopic # Required - SNS topic to subscribe to
+  collectCloudwatchLogs:
+    handler: src/handlers/collectCloudwatchLogs.handler
+    environment:
+      OUTGOING_SNS_TOPIC_ARN: !Ref OutgoingSlackMessageTopic
+    events:
+      - snsSqs:
+          name: CollectCloudwatchLogs # Required - choose a name prefix for the event queue
           topicArn: !Ref IncomingSlackMessageTopic # Required - SNS topic to subscribe to
   handleOutgoingSlackMessage:
     handler: src/handlers/handleOutgoingSlackMessage.handler
