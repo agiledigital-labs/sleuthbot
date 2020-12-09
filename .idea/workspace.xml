@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="58d7258b-1cce-4ea6-b704-4051306de9a1" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/diagnostic-tool/.envrc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/diagnostic-tool/src/handlers/slackApp.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/diagnostic-tool/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/diagnostic-tool/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/diagnostic-tool/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/diagnostic-tool/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/diagnostic-tool/serverless.yml" beforeDir="false" afterPath="$PROJECT_DIR$/diagnostic-tool/serverless.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/diagnostic-tool/yarn.lock" beforeDir="false" afterPath="$PROJECT_DIR$/diagnostic-tool/yarn.lock" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

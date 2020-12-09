@@ -1,23 +1,32 @@
-import { App, ExpressReceiver } from '@slack/bolt';
+import {App, ExpressReceiver} from '@slack/bolt';
 import awsServerlessExpress from 'aws-serverless-express';
-import { APIGatewayEvent, Context } from 'aws-lambda';
-import { v4 } from 'uuid';
-import AWS from 'aws-sdk';
+import {APIGatewayEvent, Context} from 'aws-lambda';
+import {v4} from 'uuid';
+import {SNS} from 'aws-sdk';
+import {str, cleanEnv} from "envalid";
+
+const env = cleanEnv(process.env, {
+  SLACK_SIGNING_SECRET: str(),
+  SLACK_BOT_TOKEN: str(),
+  INCOMING_SNS_TOPIC_ARN: str()
+})
 
 const expressReceiver = new ExpressReceiver({
-  signingSecret: process.env.SLACK_SIGNING_SECRET || '',
+  signingSecret: env.SLACK_SIGNING_SECRET || '',
   processBeforeResponse: true,
 });
 
 const app = new App({
-  token: process.env.SLACK_BOT_TOKEN,
-  signingSecret: process.env.SLACK_SIGNING_SECRET,
+  token: env.SLACK_BOT_TOKEN,
+  signingSecret: env.SLACK_SIGNING_SECRET,
   receiver: expressReceiver,
   processBeforeResponse: true,
 });
 
-// Listen for a slash command invocation
-app.command('/start-incident', async ({ ack, payload, context }: any) => {
+const sns = new SNS();
+
+
+app.command('/start-incident', async ({ack, payload, context}) => {
   // Acknowledge the command request
   ack();
 
@@ -32,11 +41,10 @@ app.command('/start-incident', async ({ ack, payload, context }: any) => {
 
   // eslint-disable-next-line no-console
   console.log('Sending SNS message');
-  const sns = new AWS.SNS();
   await sns
     .publish({
       // TODO: Use envalid for these
-      TopicArn: process.env.INCOMING_SNS_TOPIC_ARN,
+      TopicArn: env.INCOMING_SNS_TOPIC_ARN,
       Message: JSON.stringify(outgoingPayload),
     })
     .promise();
@@ -70,7 +78,7 @@ app.command('/start-incident', async ({ ack, payload, context }: any) => {
 
 // Listen for a button invocation with action_id `button_abc`
 // You must set up a Request URL under Interactive Components on your app configuration page
-app.action('button_abc', async ({ ack, body, context }: any) => {
+app.action('button_abc', async ({ack, body, context}: any) => {
   // Acknowledge the button request
   ack();
 
