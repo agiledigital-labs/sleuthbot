@@ -8,6 +8,13 @@ provider:
   apiGateway:
     restApiId: !Ref PublicApiGateway
     restApiRootResourceId: !GetAtt PublicApiGateway.RootResourceId
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'sns:Publish'
+      Resource:
+        - !Ref IncomingSlackMessageTopic
+        - !Ref OutgoingSlackMessageTopic
 
 custom:
   prune:
