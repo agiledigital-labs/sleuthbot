@@ -56,7 +56,15 @@ app.command('/start-incident', async ({ ack, payload, context }) => {
     );
 
     await sendSlackEvent(
-      makeOutgoingPayload(context, payload, incidentId, result.ts, result, time)
+      makeOutgoingPayload(
+        context,
+        payload,
+        incidentId,
+        result.ts,
+        result,
+        time,
+        payload.channel_id
+      )
     );
 
     console.log(result);
@@ -117,7 +125,8 @@ app.event('message', async ({ say, payload, context, client, body }) => {
         incidentId,
         timeOfEvent,
         { payload: payload, attachments: messageParent?.attachments[0] },
-        time
+        time,
+        messageParent.attachments[0].channel_id
       )
     );
 

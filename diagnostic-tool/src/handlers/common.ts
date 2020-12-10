@@ -75,11 +75,12 @@ export const makeOutgoingPayload = (
   incidentId: string,
   messageThreadKey: unknown | string,
   result: WebAPICallResult | MessageAttachment | any,
-  timeWindow: TimeWindow
+  timeWindow: TimeWindow,
+  channel: string
 ): SleuthBotIncomingRequest => {
   const message = {
     token: context.botToken,
-    channel: payload.channel_id,
+    channel,
     text: payload.text,
     message: 'incident started',
     incidentId,
