@@ -63,7 +63,7 @@ app.command('/start-incident', async ({ ack, payload, context }) => {
       // TODO: Make this configurable/not terrible
       timeWindow: {
         startTime: new Date(
-          new Date().getTime() + 15 * 60 * 1000
+          new Date().getTime() - 15 * 60 * 1000
         ).toISOString(),
         endTime: new Date().toISOString(),
       },
