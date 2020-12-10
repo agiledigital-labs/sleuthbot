@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import {
   Context,
+  AppRequestedEvent,
   MessageAttachment,
   MessageEvent,
   SlashCommand,
@@ -70,10 +71,10 @@ export const makeTimeWindow = (
 
 export const makeOutgoingPayload = (
   context: Context,
-  payload: SlashCommand | MessageEvent,
+  payload: SlashCommand | MessageEvent | AppRequestedEvent,
   incidentId: string,
   messageThreadKey: unknown | string,
-  result: WebAPICallResult | MessageAttachment,
+  result: WebAPICallResult | MessageAttachment | any,
   timeWindow: TimeWindow
 ): SleuthBotIncomingRequest => {
   const message = {
