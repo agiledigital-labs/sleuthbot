@@ -42,7 +42,8 @@ const getLogs = async (
       endTime: new Date(originalMessage.timeWindow.endTime).getTime(),
       queryString: `
       fields @log, @message
-      | filter @message LIKE /ERROR/
+      # TODO: Not sure why I need to do this to get ERROR level logs
+      | filter substr(@message, 62, 5) == "ERROR"
       | limit 20
       | sort @timestamp desc
     `,
