@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 import { SQSEvent } from 'aws-lambda';
 import AWS from 'aws-sdk';
+import { repeatWhileUndefined } from 'utils/async';
 import { SleuthBotIncomingRequest } from '../../types';
 import {
   extractSlackCommand,
   findResourcesInStack,
-  repeatWhileUndefined,
   sendOutgoingMessage,
 } from '../common';
 
