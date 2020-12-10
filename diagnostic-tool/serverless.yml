@@ -4,6 +4,7 @@ provider:
   name: aws
   region: ap-southeast-2
   runtime: nodejs12.x
+  timeout: 60
   stage: ${opt:stage, env:STAGE, "dev"}
   apiGateway:
     restApiId: !Ref PublicApiGateway
