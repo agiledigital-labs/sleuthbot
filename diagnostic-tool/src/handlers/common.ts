@@ -1,5 +1,11 @@
 /* eslint-disable no-console */
-import { Context, MessageEvent, SlashCommand } from '@slack/bolt';
+import {
+  Context,
+  MessageEvent,
+  SlashCommand,
+  MessageAttachment,
+  AppRequestedEvent,
+} from '@slack/bolt';
 import { SQSRecord } from 'aws-lambda';
 import { ResourceGroups, SNS } from 'aws-sdk';
 import { cleanEnv, str } from 'envalid';
@@ -65,10 +71,10 @@ export const makeTimeWindow = (
 
 export const makeOutgoingPayload = (
   context: Context,
-  payload: SlashCommand | MessageEvent,
+  payload: SlashCommand | MessageEvent | AppRequestedEvent,
   incidentId: string,
   messageThreadKey: unknown | string,
-  result: WebAPICallResult | MessageEvent,
+  result: WebAPICallResult | MessageAttachment | any,
   timeWindow: TimeWindow
 ): SleuthBotIncomingRequest => {
   const message = {
