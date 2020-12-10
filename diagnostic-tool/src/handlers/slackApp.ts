@@ -23,7 +23,7 @@ const app = new App({
   processBeforeResponse: true,
 });
 
-app.command('/start-incident', async ({ ack, payload, context }) => {
+app.command('/investigate', async ({ ack, payload, context }) => {
   console.log('Starting');
 
   // Acknowledge the command request
