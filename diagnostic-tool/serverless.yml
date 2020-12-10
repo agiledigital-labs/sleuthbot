@@ -71,6 +71,7 @@ provider:
           'elasticloadbalancing:DescribeTags',
           'ssm:ListDocuments',
           'cloudtrail:LookupEvents',
+          'cloudformation:DescribeStacks',
         ]
       Resource: '*'
       # TODO: Restrict to only logs in this stack/stage
@@ -128,6 +129,12 @@ functions:
     events:
       - snsSqs:
           name: CCT # Required - choose a name prefix for the event queue
+          topicArn: !Ref IncomingSlackMessageTopic # Required - SNS topic to subscribe to
+  collectCloudFormation:
+    handler: src/handlers/inspectors/collectCloudFormation.handler
+    events:
+      - snsSqs:
+          name: CCF # Required - choose a name prefix for the event queue
           topicArn: !Ref IncomingSlackMessageTopic # Required - SNS topic to subscribe to
 
   # Outgoing handlers - Send messages out to Slack
