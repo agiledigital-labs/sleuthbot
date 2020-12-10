@@ -108,7 +108,7 @@ app.event('message', async ({ say, payload, context, client, body }) => {
       )} and ${readableTimeString(eventJsonTimeStamp)}`
     );
 
-    const time = makeTimeWindow(searchStartTimeStamp, eventJsonTimeStamp);
+    const time = makeTimeWindow(eventJsonTimeStamp, searchStartTimeStamp);
 
     await sendSlackEvent(
       makeOutgoingPayload(
