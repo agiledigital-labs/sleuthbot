@@ -1,10 +1,9 @@
 /* eslint-disable no-console */
 import { MrkdwnElement } from '@slack/bolt';
-import { SQSEvent } from 'aws-lambda';
 import AWS from 'aws-sdk';
 import { SleuthBotIncomingRequest } from '../../types';
 import {
-  extractSlackCommand,
+  createInspectorHandler,
   findResourcesInStack,
   sendOutgoingMessage,
 } from '../common';
@@ -123,14 +122,14 @@ const sendMessageBad = async (
   );
 };
 
-export const handler = async (event: SQSEvent) => {
-  for await (const record of event.Records) {
-    const originalMessage = extractSlackCommand(record);
-    const resultMap = await getMetrics(originalMessage);
+export const handler = createInspectorHandler(
+  async (message: SleuthBotIncomingRequest) => {
+    const resultMap = await getMetrics(message);
     if (Object.keys(resultMap).length > 0) {
-      sendMessageBad(resultMap, originalMessage);
+      sendMessageBad(resultMap, message);
     } else {
-      await sendMessageGood(originalMessage);
+      await sendMessageGood(message);
     }
-  }
-};
+  },
+  'Metrics Inspector'
+);
