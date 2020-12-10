@@ -1,8 +1,23 @@
 # Sleuth Bot
 Chat ops for Severless incidents in aws
 
+## Architecture
+
+![architecture](./images/architecture.png?raw=true "architecture")
+
 ## Basic usage
 
+Invite the bot to a channel,
+
+Ask the bot to investigate with `/investigate [STACK_NAME]`
+
+## Request historical record
+
+Invite the bot to a channel,
+
+Share a message directly with the bot,
+
+Start a thread on the shared message with the stacks that you want to investigate
 
 ## Installing the bot into your aws account
 
@@ -23,7 +38,7 @@ The bot will also need to have the slash command and events associated with it.
 These follow
 
 slash commands:
-* /start-incident
+* /investigate
 
 events:
 * message.im | A message was posted in a direct message channel | im:history
