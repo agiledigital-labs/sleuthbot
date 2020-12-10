@@ -1,3 +1,4 @@
+import { SleuthBotIncomingRequest } from './../../types/index';
 import { sendOutgoingMessage } from './../common';
 import { SQSEvent, SQSRecord } from 'aws-lambda';
 import { CloudFormation, SNS } from 'aws-sdk';
@@ -5,6 +6,26 @@ import { extractSlackCommand } from '../common';
 
 const cloudFormation = new CloudFormation();
 const sns = new SNS();
+
+const sendMessage = async (
+  request: SleuthBotIncomingRequest,
+  message: string
+) =>
+  sendOutgoingMessage(
+    {
+      originalMessage: request,
+      message: [
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `🏗 Deployment inspector here. ${message}`,
+          },
+        },
+      ],
+    },
+    sns
+  );
 
 export const handler = async (event: SQSEvent) => {
   await Promise.allSettled(
@@ -20,20 +41,9 @@ export const handler = async (event: SQSEvent) => {
         .promise();
 
       if (stacks.Stacks?.length == 0) {
-        return sendOutgoingMessage(
-          {
-            originalMessage: request,
-            message: [
-              {
-                type: 'section',
-                text: {
-                  type: 'mrkdwn',
-                  text: `🏗 Deployment inspector here. I wasn\'t able to find the ${request.text} stack`,
-                },
-              },
-            ],
-          },
-          sns
+        return sendMessage(
+          request,
+          `I wasn\'t able to find the ${request.text} stack`
         );
       }
 
@@ -46,39 +56,17 @@ export const handler = async (event: SQSEvent) => {
         lastDeployDate.getTime() <=
           new Date(request.timeWindow.endTime).getTime()
       ) {
-        return sendOutgoingMessage(
-          {
-            originalMessage: request,
-            message: [
-              {
-                type: 'section',
-                text: {
-                  type: 'mrkdwn',
-                  text: `🏗 Deployment inspector here. The last deployment for ${
-                    request.text
-                  } took place was ${lastDeployDate.toISOString()}`,
-                },
-              },
-            ],
-          },
-          sns
+        return sendMessage(
+          request,
+          `The last deployment for ${
+            request.text
+          } took place was ${lastDeployDate.toISOString()}`
         );
       }
 
-      return sendOutgoingMessage(
-        {
-          originalMessage: request,
-          message: [
-            {
-              type: 'section',
-              text: {
-                type: 'mrkdwn',
-                text: `🏗 Deployment inspector here. There has not been a recent deployment of ${request.text}`,
-              },
-            },
-          ],
-        },
-        sns
+      return sendMessage(
+        request,
+        `There has not been a recent deployment of ${request.text}`
       );
     })
   );
