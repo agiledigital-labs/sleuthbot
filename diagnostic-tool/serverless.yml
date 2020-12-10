@@ -75,7 +75,13 @@ provider:
       Resource: '*'
       # TODO: Restrict to only logs in this stack/stage
     - Effect: 'Allow'
-      Action: ['logs:GetQueryResults', 'logs:StartQuery', 'logs:StopQuery']
+      Action:
+        [
+          'logs:GetQueryResults',
+          'logs:StartQuery',
+          'logs:StopQuery',
+          cloudwatch:GetMetricStatistics,
+        ]
       Resource: '*'
 
 custom:
