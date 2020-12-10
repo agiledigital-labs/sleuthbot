@@ -105,7 +105,7 @@ export const findResourcesInStack = async (
   resourceGroups: ResourceGroups
 ) => {
   const query = {
-    resourceTypeFilters,
+    ResourceTypeFilters: resourceTypeFilters,
     TagFilters: [
       { Key: 'aws:cloudformation:stack-name', Values: [stackName] },
       // { Key: 'STAGE', Values: [process.env.STAGE] },
