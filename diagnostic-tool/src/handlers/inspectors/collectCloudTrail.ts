@@ -99,11 +99,16 @@ export const sendMessage = async (
 };
 
 export const handler = async (event: SQSEvent) => {
+  console.info('Start');
   const formattedMessages = await Promise.allSettled(
     event.Records.map(async (sqsRecord: SQSRecord) => {
+      console.info('Record');
       const request = extractSlackCommand(sqsRecord);
+      console.info(`Request: ${request}`);
 
       const results = await fetchResults(new Date());
+
+      console.info(results);
 
       const filterAwsServices = results.filter(({ EventSource }) =>
         serviceFilter.includes(EventSource ?? '')
@@ -124,6 +129,8 @@ export const handler = async (event: SQSEvent) => {
       return { messages: formattedPayloads, request };
     })
   );
+
+  console.info(formattedMessages);
 
   formattedMessages.forEach(
     (value) =>

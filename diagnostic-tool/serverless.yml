@@ -70,6 +70,7 @@ provider:
           'elasticloadbalancing:DescribeLoadBalancers',
           'elasticloadbalancing:DescribeTags',
           'ssm:ListDocuments',
+          'cloudtrail:LookupEvents',
         ]
       Resource: '*'
       # TODO: Restrict to only logs in this stack/stage
