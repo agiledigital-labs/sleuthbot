@@ -56,7 +56,15 @@ app.command('/start-incident', async ({ ack, payload, context }) => {
     );
 
     await sendSlackEvent(
-      makeOutgoingPayload(context, payload, incidentId, result.ts, result, time)
+      makeOutgoingPayload(
+        context,
+        payload,
+        incidentId,
+        result.ts,
+        result,
+        time,
+        payload.channel_id
+      )
     );
 
     console.log(result);
@@ -65,48 +73,76 @@ app.command('/start-incident', async ({ ack, payload, context }) => {
   }
 });
 
-app.event('message', async ({ say, payload, context }) => {
-  console.dir(payload);
-
+app.event('message', async ({ say, payload, context, client, body }) => {
   const metricConversion = 1000;
 
   const searchWindow = 15 * 60 * metricConversion;
 
-  if (!payload.attachments) {
+  if (payload.thread_ts) {
+    const channel = payload.channel;
+
+    const threadTs = payload.thread_ts;
+
+    const history = await client.conversations.history({
+      channel: channel,
+      limit: 50,
+    });
+
+    const messages = history.messages as Array<{
+      ts?: string;
+      attachments?: any;
+    }>;
+
+    const messageParent = messages.find((item) => item.ts === threadTs);
+
+    if (!messageParent) {
+      return;
+    }
+
+    const incidentId = v4();
+
+    const timeOfEvent = messageParent.attachments[0].ts as string;
+
+    const eventJsonTimeStamp = parseInt(timeOfEvent, 10) * metricConversion;
+
+    const searchStartTimeStamp = eventJsonTimeStamp - searchWindow;
+
+    const readableTimeString = (timeStamp: number) =>
+      new Date(timeStamp).toTimeString();
+
+    await say(
+      `We will start looking at for errors between ${readableTimeString(
+        searchStartTimeStamp
+      )} and ${readableTimeString(eventJsonTimeStamp)}`
+    );
+
+    const time = makeTimeWindow(eventJsonTimeStamp, searchStartTimeStamp);
+
+    await sendSlackEvent(
+      makeOutgoingPayload(
+        context,
+        payload,
+        incidentId,
+        timeOfEvent,
+        { payload: payload, attachments: messageParent?.attachments[0] },
+        time,
+        messageParent.attachments[0].channel_id
+      )
+    );
+
+    return;
+  } else if (!payload.attachments) {
     await say('Sorry we could not find an event to investigate');
     return;
+  } else {
+    await say(standardResponse);
+    await say(
+      'To help us out could you add the name of the services you want to check in a thread on your shared message' +
+        ' above :pray:'
+    );
+
+    return;
   }
-
-  const incidentId = v4();
-
-  const timeOfEvent = payload.attachments[0].ts as string;
-
-  const eventJsonTimeStamp = parseInt(timeOfEvent, 10) * metricConversion;
-
-  const searchStartTimeStamp = eventJsonTimeStamp - searchWindow;
-
-  const readableTimeString = (timeStamp: number) =>
-    new Date(timeStamp).toTimeString();
-
-  await say(standardResponse);
-  await say(
-    `We will start looking at for errors between ${readableTimeString(
-      searchStartTimeStamp
-    )} and ${readableTimeString(eventJsonTimeStamp)}`
-  );
-
-  const time = makeTimeWindow(searchStartTimeStamp, eventJsonTimeStamp);
-
-  await sendSlackEvent(
-    makeOutgoingPayload(
-      context,
-      payload,
-      incidentId,
-      timeOfEvent,
-      payload,
-      time
-    )
-  );
 });
 
 const server = awsServerlessExpress.createServer(expressReceiver.app);

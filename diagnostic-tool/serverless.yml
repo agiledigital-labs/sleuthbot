@@ -4,6 +4,7 @@ provider:
   name: aws
   region: ap-southeast-2
   runtime: nodejs12.x
+  timeout: 60
   stage: ${opt:stage, env:STAGE, "dev"}
   apiGateway:
     restApiId: !Ref PublicApiGateway
@@ -76,7 +77,13 @@ provider:
       Resource: '*'
       # TODO: Restrict to only logs in this stack/stage
     - Effect: 'Allow'
-      Action: ['logs:GetQueryResults', 'logs:StartQuery', 'logs:StopQuery']
+      Action:
+        [
+          'logs:GetQueryResults',
+          'logs:StartQuery',
+          'logs:StopQuery',
+          cloudwatch:GetMetricStatistics,
+        ]
       Resource: '*'
 
 custom:
