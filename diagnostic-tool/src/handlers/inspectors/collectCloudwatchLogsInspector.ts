@@ -85,7 +85,21 @@ const getLogs = async (
   return lines;
 };
 
-const sendMessage = async (
+const sendMessageWithoutLogs = async (
+  originalMessage: SleuthBotIncomingRequest
+): Promise<void> => {
+  await sendOutgoingMessage(
+    {
+      originalMessage,
+      message: [],
+      messageAsText:
+        "📃 Log Inspector here! I didn't find any suspicious logs. Everything looks great over here!",
+    },
+    sns
+  );
+};
+
+const sendMessageWithLogs = async (
   lines: string[],
   originalMessage: SleuthBotIncomingRequest
 ): Promise<void> => {
@@ -109,7 +123,9 @@ export const handler = async (event: SQSEvent) => {
     const message = extractSlackCommand(record);
     const lines = await getLogs(message);
     if (lines.length > 0) {
-      await sendMessage(lines, message);
+      await sendMessageWithLogs(lines, message);
+    } else {
+      await sendMessageWithoutLogs(message);
     }
   }
 };
