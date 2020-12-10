@@ -12,6 +12,12 @@ export type SleuthBotIncomingRequest = {
   message: string;
   incidentId: string;
   messageThreadKey: string;
+  // The period of time to do the investigation on
+  timeWindow: {
+    // ISO Dates
+    startTime: string;
+    endTime: string;
+  };
   meta: {
     rawPayload: SlashCommand;
     rawResponse: WebAPICallResult;
@@ -21,4 +27,8 @@ export type SleuthBotIncomingRequest = {
 export type SleuthBotNotification = {
   originalMessage: SleuthBotIncomingRequest;
   message: (KnownBlock | Block)[];
+  // Normal non block text that can be much longer
+  // If no blocks provided, will be used as the body text.
+  // Otherwise it will be used as the notification text only
+  messageAsText?: string | undefined;
 };

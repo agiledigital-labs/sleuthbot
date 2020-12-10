@@ -60,6 +60,13 @@ app.command('/start-incident', async ({ ack, payload, context }) => {
         rawPayload: payload,
         rawResponse: result,
       },
+      // TODO: Make this configurable/not terrible
+      timeWindow: {
+        startTime: new Date(
+          new Date().getTime() - 15 * 60 * 1000
+        ).toISOString(),
+        endTime: new Date().toISOString(),
+      },
     } as SleuthBotIncomingRequest;
 
     await sns

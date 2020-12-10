@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-import { SectionBlock } from '@slack/bolt';
 import { SQSEvent } from 'aws-lambda';
 import AWS from 'aws-sdk';
 import { SleuthBotIncomingRequest } from '../../types';
@@ -59,10 +58,10 @@ const getLogs = async (
   const queryResponse = await cloudWatchLogs
     .startQuery({
       logGroupNames: names.map((n) => `/aws/lambda/${n}`),
-      startTime: new Date().getTime() - 15 * 60 * 1000,
-      endTime: new Date().getTime(),
+      startTime: new Date(originalMessage.timeWindow.startTime).getTime(),
+      endTime: new Date(originalMessage.timeWindow.endTime).getTime(),
       queryString: `
-      fields @message
+      fields @log, @message
       | filter @message LIKE /ERROR/
       | limit 20
       | sort @timestamp desc
@@ -97,7 +96,10 @@ const getLogs = async (
   }
 
   const results = queryResultResponse?.results ?? [];
-  const lines = results.map((r) => r[0].value).filter(notUndefined);
+  const lines = results.map(
+    ([logName, logMessage]) =>
+      `${logName.value ?? 'UNKNOWN'} ${logMessage.value ?? 'UNKNOWN'}`
+  );
   console.info(`Retrieved [${lines.length}] lines of logs!`);
   return lines;
 };
@@ -126,37 +128,22 @@ const sendMessage = async (
   lines: string[],
   originalMessage: SleuthBotIncomingRequest
 ): Promise<void> => {
-  const logLines: SectionBlock[] = lines.map((line) => ({
-    type: 'section',
-    text: {
-      type: 'mrkdwn',
-      text: '```' + line + '```',
-    },
-  }));
+  const stringifiedLines = lines.join('\n');
 
   await sendOutgoingMessage(
     {
       originalMessage,
-      message: [
-        {
-          type: 'section',
-          text: {
-            type: 'mrkdwn',
-            text:
-              "📃 Log Inspector here! I've fetched you some CloudWatch logs that might be relevant. Hope it helps!",
-          },
-        },
-        ...logLines,
-      ],
+      message: [],
+      messageAsText:
+        "📃 Log Inspector here! I've fetched you some CloudWatch logs that might be relevant.\n\n ```\n" +
+        stringifiedLines +
+        '\n```',
     },
     sns
   );
 };
 
 export const handler = async (event: SQSEvent) => {
-  // eslint-disable-next-line no-console
-  console.log(JSON.stringify(event, undefined, 2));
-
   for await (const record of event.Records) {
     const message = extractSlackCommand(record);
     const lines = await getLogs(message);
