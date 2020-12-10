@@ -21,11 +21,14 @@ const lambdaDataFetcher: Fetcher = (serviceScope) => (payload) => {
     { responseElements: { functionName: string }; eventName: string }
   >JSON.parse(payload);
 
-  if (data.responseElements.functionName.includes(serviceScope ?? '')) {
+  if (
+    serviceScope !== undefined &&
+    data.responseElements.functionName.includes(serviceScope)
+  ) {
     return `\`${data.responseElements.functionName}\``;
   }
 
-  return undefined;
+  return `\`${data.responseElements.functionName}\``;
 };
 
 const serviceMapping: Record<string, Fetcher> = {
@@ -120,6 +123,11 @@ export const handler = async (event: SQSEvent) => {
 
       return { messages: formattedPayloads, request };
     })
+  );
+
+  formattedMessages.forEach(
+    (value) =>
+      value.status === 'fulfilled' && console.info(value.value.messages)
   );
 
   await Promise.allSettled(
