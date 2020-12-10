@@ -6,7 +6,7 @@ import {
   MessageEvent,
   SlashCommand,
 } from '@slack/bolt';
-import { SQSRecord } from 'aws-lambda';
+import { SQSEvent, SQSHandler, SQSRecord } from 'aws-lambda';
 import { ResourceGroups, SNS } from 'aws-sdk';
 import { cleanEnv, str } from 'envalid';
 import {
@@ -134,4 +134,44 @@ export const findResourcesInStack = async (
   return resourceIds
     .map((rid) => rid.ResourceArn?.split(':')[6])
     .filter(notUndefined);
+};
+
+/**
+ * Creates a handler function that can be used by an inspector.
+ *
+ * Handles cross cutting concerns like logging, validation and error handling.
+ *
+ * @param handlerFn will be called once for each incoming message
+ * @param handlerName the name of the inspector to make nice error messages
+ */
+export const createInspectorHandler = (
+  handlerFn: (request: SleuthBotIncomingRequest) => Promise<void>,
+  handlerName: string
+): SQSHandler => async (event: SQSEvent) => {
+  // TODO: Validate the payload
+
+  for await (const record of event.Records) {
+    const incomingRequest = extractSlackCommand(record);
+
+    try {
+      await handlerFn(incomingRequest);
+    } catch (error: unknown) {
+      console.error('Error handling message', error);
+      await sendOutgoingMessage(
+        {
+          originalMessage: incomingRequest,
+          message: [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: `:cry: ${handlerName} is having some issues at the moment. Hopefully it feels better soon.`,
+              },
+            },
+          ],
+        },
+        sns
+      );
+    }
+  }
 };

@@ -1,9 +1,8 @@
 import { SectionBlock } from '@slack/bolt';
-import { SQSEvent, SQSRecord } from 'aws-lambda';
 import { CloudTrail, SNS } from 'aws-sdk';
 import { EventsList } from 'aws-sdk/clients/cloudtrail';
 import { SleuthBotIncomingRequest, TimeWindow } from '../../types';
-import { extractSlackCommand, sendOutgoingMessage } from '../common';
+import { createInspectorHandler, sendOutgoingMessage } from '../common';
 
 const cloudTrail = new CloudTrail();
 const sns = new SNS();
@@ -129,54 +128,33 @@ export const sendMessage = async (
   }
 };
 
-export const handler = async (event: SQSEvent) => {
-  const formattedMessages = await Promise.allSettled(
-    event.Records.map(async (sqsRecord: SQSRecord) => {
-      const request = extractSlackCommand(sqsRecord);
+export const handler = createInspectorHandler(
+  async (request: SleuthBotIncomingRequest) => {
+    const results = await fetchResults(request.timeWindow);
 
-      const results = await fetchResults(request.timeWindow);
+    const filterAwsServices = results.filter(({ EventSource }) =>
+      serviceFilter.includes(EventSource ?? '')
+    );
 
-      const filterAwsServices = results.filter(({ EventSource }) =>
-        serviceFilter.includes(EventSource ?? '')
+    const formattedPayloads = filterAwsServices
+      .map(
+        ({ EventName, Username, CloudTrailEvent, EventSource, EventTime }) => ({
+          EventName: eventNameStripping(EventName ?? ''),
+          Username,
+          EventSource: EventSource?.split('.')[0],
+          TimeStamp: EventTime?.toISOString() ?? '',
+          message: serviceMapping[EventSource ?? 'unknown'](request.text)(
+            CloudTrailEvent
+          ),
+        })
+      )
+      .map(
+        ({ EventName, Username, EventSource, message, TimeStamp }) =>
+          `*Event*: ${EventName}\n*Timestamp*: ${TimeStamp}\n*User*: ${Username}\n*Source*: ${EventSource}\n${message}`
       );
 
-      const formattedPayloads = filterAwsServices
-        .map(
-          ({
-            EventName,
-            Username,
-            CloudTrailEvent,
-            EventSource,
-            EventTime,
-          }) => ({
-            EventName: eventNameStripping(EventName ?? ''),
-            Username,
-            EventSource: EventSource?.split('.')[0],
-            TimeStamp: EventTime?.toISOString() ?? '',
-            message: serviceMapping[EventSource ?? 'unknown'](request.text)(
-              CloudTrailEvent
-            ),
-          })
-        )
-        .map(
-          ({ EventName, Username, EventSource, message, TimeStamp }) =>
-            `*Event*: ${EventName}\n*Timestamp*: ${TimeStamp}\n*User*: ${Username}\n*Source*: ${EventSource}\n${message}`
-        );
-
-      return { messages: formattedPayloads, request };
-    })
-  );
-
-  formattedMessages.forEach(
-    (value) =>
-      value.status === 'fulfilled' && console.info(value.value.messages)
-  );
-
-  await Promise.allSettled(
-    formattedMessages.map(async (value) =>
-      value.status === 'fulfilled'
-        ? sendMessage(value.value.messages, value.value.request)
-        : undefined
-    )
-  );
-};
+    console.info(formattedPayloads);
+    await sendMessage(formattedPayloads, request);
+  },
+  'Audit Inspector'
+);
