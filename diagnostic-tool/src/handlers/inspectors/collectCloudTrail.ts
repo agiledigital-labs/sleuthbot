@@ -172,7 +172,7 @@ export const handler = async (event: SQSEvent) => {
       value.status === 'fulfilled' && console.info(value.value.messages)
   );
 
-  const t = await Promise.allSettled(
+  await Promise.allSettled(
     formattedMessages.map(async (value) =>
       value.status === 'fulfilled'
         ? sendMessage(value.value.messages, value.value.request)
