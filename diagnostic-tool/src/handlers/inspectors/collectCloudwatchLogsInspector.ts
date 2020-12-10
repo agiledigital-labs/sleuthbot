@@ -5,8 +5,10 @@ import { SleuthBotIncomingRequest } from '../../types';
 import {
   extractSlackCommand,
   findResourcesInStack,
+  repeatWhileUndefined,
   sendOutgoingMessage,
 } from '../common';
+
 const resourceGroups = new AWS.ResourceGroups();
 const cloudWatchLogs = new AWS.CloudWatchLogs();
 const sns = new AWS.SNS();
@@ -32,7 +34,7 @@ const getLogs = async (
     return [];
   }
 
-  console.info(`Fetching interesting logs for log groups [${names}]...`);
+  console.info(`Fetching interesting logs for lambdas [${names}]...`);
 
   const queryResponse = await cloudWatchLogs
     .startQuery({
@@ -83,27 +85,21 @@ const getLogs = async (
   return lines;
 };
 
-const delayFn = (delay: number): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, delay));
-
-const repeatWhileUndefined = async <T>(
-  fn: () => Promise<T | undefined>,
-  maxAttempts = 10,
-  delay = 3000,
-  attempt = 0
-): Promise<T | undefined> => {
-  const result = await fn();
-  if (result === undefined) {
-    console.log(`Result was undefined, Will try again after [${delay}] ms`);
-    await delayFn(delay);
-    // eslint-disable-next-line unused-imports/no-unused-vars-ts
-    return await repeatWhileUndefined(fn, maxAttempts, delay, attempt + 1);
-  } else {
-    return result;
-  }
+const sendMessageWithoutLogs = async (
+  originalMessage: SleuthBotIncomingRequest
+): Promise<void> => {
+  await sendOutgoingMessage(
+    {
+      originalMessage,
+      message: [],
+      messageAsText:
+        "📃 Log Inspector here! I didn't find any suspicious logs. Everything looks great over here!",
+    },
+    sns
+  );
 };
 
-const sendMessage = async (
+const sendMessageWithLogs = async (
   lines: string[],
   originalMessage: SleuthBotIncomingRequest
 ): Promise<void> => {
@@ -127,7 +123,9 @@ export const handler = async (event: SQSEvent) => {
     const message = extractSlackCommand(record);
     const lines = await getLogs(message);
     if (lines.length > 0) {
-      await sendMessage(lines, message);
+      await sendMessageWithLogs(lines, message);
+    } else {
+      await sendMessageWithoutLogs(message);
     }
   }
 };

@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
 import {
   Context,
+  AppRequestedEvent,
+  MessageAttachment,
   MessageEvent,
   SlashCommand,
-  MessageAttachment,
-  AppRequestedEvent,
 } from '@slack/bolt';
 import { SQSRecord } from 'aws-lambda';
 import { ResourceGroups, SNS } from 'aws-sdk';
@@ -133,4 +133,24 @@ export const findResourcesInStack = async (
   return resourceIds
     .map((rid) => rid.ResourceArn?.split(':')[6])
     .filter(notUndefined);
+};
+
+const delayFn = (delay: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, delay));
+
+export const repeatWhileUndefined = async <T>(
+  fn: () => Promise<T | undefined>,
+  maxAttempts = 10,
+  delay = 3000,
+  attempt = 0
+): Promise<T | undefined> => {
+  const result = await fn();
+  if (result === undefined) {
+    console.log(`Result was undefined, Will try again after [${delay}] ms`);
+    await delayFn(delay);
+    // eslint-disable-next-line unused-imports/no-unused-vars-ts
+    return await repeatWhileUndefined(fn, maxAttempts, delay, attempt + 1);
+  } else {
+    return result;
+  }
 };
