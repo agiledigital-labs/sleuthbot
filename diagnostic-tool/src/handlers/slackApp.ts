@@ -3,9 +3,13 @@ import { App, ExpressReceiver } from '@slack/bolt';
 import awsServerlessExpress from 'aws-serverless-express';
 import { APIGatewayEvent, Context } from 'aws-lambda';
 import { v4 } from 'uuid';
-import { SNS } from 'aws-sdk';
-import { SleuthBotIncomingRequest } from '../types';
-import { env } from './common';
+import {
+  env,
+  makeOutgoingPayload,
+  makeTimeWindow,
+  sendSlackEvent,
+  standardResponse,
+} from './common';
 
 const expressReceiver = new ExpressReceiver({
   signingSecret: env.SLACK_SIGNING_SECRET || '',
@@ -18,8 +22,6 @@ const app = new App({
   receiver: expressReceiver,
   processBeforeResponse: true,
 });
-
-const sns = new SNS();
 
 app.command('/start-incident', async ({ ack, payload, context }) => {
   console.log('Starting');
@@ -40,8 +42,7 @@ app.command('/start-incident', async ({ ack, payload, context }) => {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text:
-              '🕵️‍♂️ SleuthBot is on the case! Updates will be posted this thread. Stand by!',
+            text: standardResponse,
           },
         },
       ],
@@ -49,37 +50,63 @@ app.command('/start-incident', async ({ ack, payload, context }) => {
       text: 'SleuthBot is on the case!',
     });
 
-    const outgoingPayload: SleuthBotIncomingRequest = {
-      token: context.botToken,
-      channel: payload.channel_id,
-      text: payload.text,
-      message: 'incident started',
-      incidentId,
-      messageThreadKey: result.ts,
-      meta: {
-        rawPayload: payload,
-        rawResponse: result,
-      },
-      // TODO: Make this configurable/not terrible
-      timeWindow: {
-        startTime: new Date(
-          new Date().getTime() - 15 * 60 * 1000
-        ).toISOString(),
-        endTime: new Date().toISOString(),
-      },
-    } as SleuthBotIncomingRequest;
+    const time = makeTimeWindow(
+      new Date().getTime(),
+      new Date(new Date().getTime() - 15 * 60 * 1000).getTime()
+    );
 
-    await sns
-      .publish({
-        TopicArn: env.INCOMING_SNS_TOPIC_ARN,
-        Message: JSON.stringify(outgoingPayload),
-      })
-      .promise();
+    await sendSlackEvent(
+      makeOutgoingPayload(context, payload, incidentId, result.ts, result, time)
+    );
 
     console.log(result);
   } catch (error) {
     console.error(error);
   }
+});
+
+app.event('message', async ({ say, payload, context }) => {
+  console.dir(payload);
+
+  const metricConversion = 1000;
+
+  const searchWindow = 15 * 60 * metricConversion;
+
+  if (!payload.attachments) {
+    await say('Sorry we could not find an event to investigate');
+    return;
+  }
+
+  const incidentId = v4();
+
+  const timeOfEvent = payload.attachments[0].ts as string;
+
+  const eventJsonTimeStamp = parseInt(timeOfEvent, 10) * metricConversion;
+
+  const searchStartTimeStamp = eventJsonTimeStamp - searchWindow;
+
+  const readableTimeString = (timeStamp: number) =>
+    new Date(timeStamp).toTimeString();
+
+  await say(standardResponse);
+  await say(
+    `We will start looking at for errors between ${readableTimeString(
+      searchStartTimeStamp
+    )} and ${readableTimeString(eventJsonTimeStamp)}`
+  );
+
+  const time = makeTimeWindow(searchStartTimeStamp, eventJsonTimeStamp);
+
+  await sendSlackEvent(
+    makeOutgoingPayload(
+      context,
+      payload,
+      incidentId,
+      timeOfEvent,
+      payload,
+      time
+    )
+  );
 });
 
 const server = awsServerlessExpress.createServer(expressReceiver.app);

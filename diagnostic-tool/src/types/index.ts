@@ -13,11 +13,7 @@ export type SleuthBotIncomingRequest = {
   incidentId: string;
   messageThreadKey: string;
   // The period of time to do the investigation on
-  timeWindow: {
-    // ISO Dates
-    startTime: string;
-    endTime: string;
-  };
+  timeWindow: TimeWindow;
   meta: {
     rawPayload: SlashCommand;
     rawResponse: WebAPICallResult;
@@ -31,4 +27,9 @@ export type SleuthBotNotification = {
   // If no blocks provided, will be used as the body text.
   // Otherwise it will be used as the notification text only
   messageAsText?: string | undefined;
+};
+
+export type TimeWindow = {
+  startTime: string;
+  endTime: string;
 };

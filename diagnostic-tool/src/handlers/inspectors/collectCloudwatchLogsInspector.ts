@@ -2,12 +2,11 @@
 import { SQSEvent } from 'aws-lambda';
 import AWS from 'aws-sdk';
 import { SleuthBotIncomingRequest } from '../../types';
-import { extractSlackCommand, sendOutgoingMessage } from '../common';
-
-function notUndefined<T>(x: T | undefined): x is T {
-  return x !== undefined;
-}
-
+import {
+  extractSlackCommand,
+  findResourcesInStack,
+  sendOutgoingMessage,
+} from '../common';
 const resourceGroups = new AWS.ResourceGroups();
 const cloudWatchLogs = new AWS.CloudWatchLogs();
 const sns = new AWS.SNS();
@@ -22,31 +21,11 @@ const getLogs = async (
   }
 
   console.log(`Collecting logs for stack [${stackName}]...`);
-
-  const query = {
-    ResourceTypeFilters: ['AWS::Lambda::Function'],
-    TagFilters: [
-      { Key: 'aws:cloudformation:stack-name', Values: [stackName] },
-      // { Key: 'STAGE', Values: [process.env.STAGE] },
-    ],
-  };
-
-  console.log('query', query);
-
-  const searchResourceResponse = await resourceGroups
-    .searchResources({
-      ResourceQuery: {
-        Type: 'TAG_FILTERS_1_0',
-        Query: JSON.stringify(query),
-      },
-    })
-    .promise();
-
-  const resourceIds = searchResourceResponse.ResourceIdentifiers ?? [];
-  console.log('resourceIds', resourceIds);
-  const names = resourceIds
-    .map((rid) => rid.ResourceArn?.split(':')[6])
-    .filter(notUndefined);
+  const names = await findResourcesInStack(
+    stackName,
+    ['AWS::Lambda::Function'],
+    resourceGroups
+  );
 
   if (names.length === 0) {
     console.warn('No matching resources found!');

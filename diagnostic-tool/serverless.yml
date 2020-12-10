@@ -117,6 +117,12 @@ functions:
       - snsSqs:
           name: CCL # Required - choose a name prefix for the event queue
           topicArn: !Ref IncomingSlackMessageTopic # Required - SNS topic to subscribe to
+  collectCloudwatchMetricsInspector:
+    handler: src/handlers/inspectors/collectCloudwatchMetricsInspector.handler
+    events:
+      - snsSqs:
+          name: CMI # Required - choose a name prefix for the event queue
+          topicArn: !Ref IncomingSlackMessageTopic # Required - SNS topic to subscribe to
   collectCloudTrail:
     handler: src/handlers/inspectors/collectCloudTrail.handler
     events:
