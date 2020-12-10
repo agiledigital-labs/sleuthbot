@@ -84,7 +84,7 @@ export const makeOutgoingPayload = (
     text: payload.text,
     message: 'incident started',
     incidentId,
-    messageThreadKey: result.ts,
+    messageThreadKey,
     meta: {
       rawPayload: payload,
       rawResponse: result,
