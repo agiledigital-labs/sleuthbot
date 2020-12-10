@@ -1,15 +1,12 @@
 /* eslint-disable no-console */
-import { SQSEvent } from 'aws-lambda';
 import { SNS } from 'aws-sdk';
 import { SleuthBotIncomingRequest } from '../../types';
-import { extractSlackCommand, sendOutgoingMessage } from '../common';
+import { createInspectorHandler, sendOutgoingMessage } from '../common';
 
 const sns = new SNS();
 
-export const handler = async (event: SQSEvent) => {
-  const bodies = event.Records.map(extractSlackCommand);
-
-  const sendMessage = async (body: SleuthBotIncomingRequest) => {
+export const handler = createInspectorHandler(
+  async (message: SleuthBotIncomingRequest) => {
     await sendOutgoingMessage(
       {
         message: [
@@ -22,13 +19,10 @@ export const handler = async (event: SQSEvent) => {
             },
           },
         ],
-        originalMessage: body,
+        originalMessage: message,
       },
       sns
     );
-  };
-
-  await Promise.all(bodies.map(async (body) => await sendMessage(body)))
-    .catch((error) => console.error(error))
-    .finally(() => console.log('done'));
-};
+  },
+  'Welcome Inspector'
+);

@@ -1,11 +1,10 @@
 /* eslint-disable no-console */
-import { SQSEvent } from 'aws-lambda';
 import AWS from 'aws-sdk';
+import { repeatWhileUndefined } from 'utils/async';
 import { SleuthBotIncomingRequest } from '../../types';
 import {
-  extractSlackCommand,
+  createInspectorHandler,
   findResourcesInStack,
-  repeatWhileUndefined,
   sendOutgoingMessage,
 } from '../common';
 
@@ -118,14 +117,14 @@ const sendMessageWithLogs = async (
   );
 };
 
-export const handler = async (event: SQSEvent) => {
-  for await (const record of event.Records) {
-    const message = extractSlackCommand(record);
+export const handler = createInspectorHandler(
+  async (message: SleuthBotIncomingRequest) => {
     const lines = await getLogs(message);
     if (lines.length > 0) {
       await sendMessageWithLogs(lines, message);
     } else {
       await sendMessageWithoutLogs(message);
     }
-  }
-};
+  },
+  'Log Inspector'
+);

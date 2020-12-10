@@ -6,7 +6,7 @@ import {
   MessageEvent,
   SlashCommand,
 } from '@slack/bolt';
-import { SQSRecord } from 'aws-lambda';
+import { SQSEvent, SQSHandler, SQSRecord } from 'aws-lambda';
 import { ResourceGroups, SNS } from 'aws-sdk';
 import { cleanEnv, str } from 'envalid';
 import {
@@ -84,7 +84,7 @@ export const makeOutgoingPayload = (
     text: payload.text,
     message: 'incident started',
     incidentId,
-    messageThreadKey: result.ts,
+    messageThreadKey,
     meta: {
       rawPayload: payload,
       rawResponse: result,
@@ -136,22 +136,42 @@ export const findResourcesInStack = async (
     .filter(notUndefined);
 };
 
-const delayFn = (delay: number): Promise<void> =>
-  new Promise((resolve) => setTimeout(resolve, delay));
+/**
+ * Creates a handler function that can be used by an inspector.
+ *
+ * Handles cross cutting concerns like logging, validation and error handling.
+ *
+ * @param handlerFn will be called once for each incoming message
+ * @param handlerName the name of the inspector to make nice error messages
+ */
+export const createInspectorHandler = (
+  handlerFn: (request: SleuthBotIncomingRequest) => Promise<void>,
+  handlerName: string
+): SQSHandler => async (event: SQSEvent) => {
+  // TODO: Validate the payload
 
-export const repeatWhileUndefined = async <T>(
-  fn: () => Promise<T | undefined>,
-  maxAttempts = 10,
-  delay = 3000,
-  attempt = 0
-): Promise<T | undefined> => {
-  const result = await fn();
-  if (result === undefined) {
-    console.log(`Result was undefined, Will try again after [${delay}] ms`);
-    await delayFn(delay);
-    // eslint-disable-next-line unused-imports/no-unused-vars-ts
-    return await repeatWhileUndefined(fn, maxAttempts, delay, attempt + 1);
-  } else {
-    return result;
+  for await (const record of event.Records) {
+    const incomingRequest = extractSlackCommand(record);
+
+    try {
+      await handlerFn(incomingRequest);
+    } catch (error: unknown) {
+      console.error('Error handling message', error);
+      await sendOutgoingMessage(
+        {
+          originalMessage: incomingRequest,
+          message: [
+            {
+              type: 'section',
+              text: {
+                type: 'mrkdwn',
+                text: `:cry: ${handlerName} is having some issues at the moment. Hopefully it feels better soon.`,
+              },
+            },
+          ],
+        },
+        sns
+      );
+    }
   }
 };
