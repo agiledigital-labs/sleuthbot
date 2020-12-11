@@ -36,14 +36,13 @@ export const extractOutgoingMessage = ({
 export const sendOutgoingMessage = async (
   message: SleuthBotNotification,
   sns: SNS
-) => {
-  await sns
+) =>
+  sns
     .publish({
       TopicArn: env.OUTGOING_SNS_TOPIC_ARN,
       Message: JSON.stringify(message),
     })
     .promise();
-};
 
 export const standardResponse: string =
   '🕵️‍♂️ SleuthBot is on the case! Updates will be posted in a thread. Stand by!';
@@ -52,14 +51,13 @@ const sns = new SNS();
 
 export const sendSlackEvent = async (
   outgoingPayload: SleuthBotIncomingRequest
-) => {
-  await sns
+) =>
+  sns
     .publish({
       TopicArn: env.INCOMING_SNS_TOPIC_ARN,
       Message: JSON.stringify(outgoingPayload),
     })
     .promise();
-};
 
 export const makeTimeWindow = (
   endTime: number,

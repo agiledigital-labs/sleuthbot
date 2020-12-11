@@ -93,14 +93,6 @@ custom:
   domain: sluthbot.sammurphy.dev
 
 functions:
-  # Dunno
-  getHealthCheck:
-    handler: src/handlers/getHealthCheck.handler
-    events:
-      - http:
-          path: hc
-          method: get
-
   # Slack Frontend - Gets events from Slack
   slackApp:
     handler: src/handlers/slackApp.handler
@@ -164,8 +156,6 @@ resources:
             - EDGE
     PublicApiGatewayDeployment:
       Type: AWS::ApiGateway::Deployment
-      DependsOn:
-        - ApiGatewayMethodHcGet
       Properties:
         RestApiId: !Ref PublicApiGateway
     IncomingSlackMessageTopic:
