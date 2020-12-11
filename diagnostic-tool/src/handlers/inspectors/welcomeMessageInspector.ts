@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { SNS } from 'aws-sdk';
 import { SleuthBotIncomingRequest } from '../../types';
 import { createInspectorHandler, sendOutgoingMessage } from '../common';

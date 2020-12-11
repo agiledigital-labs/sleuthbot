@@ -153,7 +153,6 @@ export const handler = createInspectorHandler(
           `*Event*: ${EventName}\n*Timestamp*: ${TimeStamp}\n*User*: ${Username}\n*Source*: ${EventSource}\n${message}`
       );
 
-    console.info(formattedPayloads);
     await sendMessage(formattedPayloads, request);
   },
   'Audit Inspector'

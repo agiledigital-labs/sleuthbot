@@ -126,7 +126,7 @@ export const handler = createInspectorHandler(
   async (message: SleuthBotIncomingRequest) => {
     const resultMap = await getMetrics(message);
     if (Object.keys(resultMap).length > 0) {
-      sendMessageBad(resultMap, message);
+      await sendMessageBad(resultMap, message);
     } else {
       await sendMessageGood(message);
     }
