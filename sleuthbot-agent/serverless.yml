@@ -1,4 +1,4 @@
-service: diagnostic-tool
+service: sleuthbot-agent
 
 provider:
   name: aws
@@ -149,7 +149,7 @@ resources:
     PublicApiGateway:
       Type: AWS::ApiGateway::RestApi
       Properties:
-        Name: diagnostic-tool-publicApiGateway-${self:provider.stage}
+        Name: sleuthbot-agent-publicApiGateway-${self:provider.stage}
         MinimumCompressionSize: 1024
         EndpointConfiguration:
           Types:

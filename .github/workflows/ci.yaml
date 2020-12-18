@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         node-version: [12.x]
-        package: [test-environment, diagnostic-tool]
+        package: [test-environment, sleuthbot-agent]
 
     steps:
       - uses: actions/checkout@v2

@@ -1,10 +1,10 @@
 {
-  "name": "diagnostic-tool",
+  "name": "sleuthbot-agent",
   "description": "",
   "version": "1.0.0",
   "license": "MIT",
   "repository": {
-    "directory": "diagnostic-tool",
+    "directory": "sleuthbot-agent",
     "type": "git",
     "url": "https://github.com/agiledigital-labs/sluthbot.git"
   },
